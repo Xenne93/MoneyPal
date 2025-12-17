@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoneyPal", "MoneyPal\MoneyPal.csproj", "{832A8B97-81C0-4CAB-80CD-B1A64C51F182}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{832A8B97-81C0-4CAB-80CD-B1A64C51F182}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{832A8B97-81C0-4CAB-80CD-B1A64C51F182}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{832A8B97-81C0-4CAB-80CD-B1A64C51F182}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{832A8B97-81C0-4CAB-80CD-B1A64C51F182}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

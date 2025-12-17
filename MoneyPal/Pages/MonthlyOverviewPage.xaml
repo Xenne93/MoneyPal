@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:MoneyPal.Pages"
+             x:Class="MoneyPal.Pages.MonthlyOverviewPage"
+             Title="Maandoverzicht">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="20">
+            <!-- Month Navigation -->
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
+                <Button Grid.Column="0"
+                        Text="◀"
+                        Style="{StaticResource SecondaryButton}"
+                        Clicked="OnPreviousMonthClicked"
+                        WidthRequest="50"
+                        HeightRequest="50" />
+
+                <Frame Grid.Column="1"
+                       Style="{StaticResource CardFrame}"
+                       Padding="15"
+                       VerticalOptions="Center">
+                    <Label x:Name="MonthLabel"
+                           TextColor="{StaticResource TextPrimary}"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Frame>
+
+                <Button Grid.Column="2"
+                        Text="▶"
+                        Style="{StaticResource SecondaryButton}"
+                        Clicked="OnNextMonthClicked"
+                        WidthRequest="50"
+                        HeightRequest="50" />
+            </Grid>
+        </Grid>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="15" Padding="20,0,20,20">
+
+                <!-- Summary Cards - 2 Column Grid Layout -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+
+                    <!-- Row 0, Column 0: Total Expenses -->
+                    <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource CardFrame}" Padding="12,10">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="Totale lasten"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="11" />
+                            <Label x:Name="TotalLabel"
+                                   Text="€ 0"
+                                   TextColor="{StaticResource Primary}"
+                                   FontSize="15"
+                                   FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Row 0, Column 1: Spent -->
+                    <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource CardFrame}" Padding="12,10">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="Uitgegeven"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="11" />
+                            <Label x:Name="PaidLabel"
+                                   Text="€ 0"
+                                   TextColor="{StaticResource Warning}"
+                                   FontSize="15"
+                                   FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Row 1, Column 0: To Pay -->
+                    <Frame Grid.Row="1" Grid.Column="0" Style="{StaticResource CardFrame}" Padding="12,10">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="Te betalen"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="11" />
+                            <Label x:Name="UnpaidLabel"
+                                   Text="€ 0"
+                                   TextColor="{StaticResource Error}"
+                                   FontSize="15"
+                                   FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Row 1, Column 1: Current Bank Balance with Edit Button -->
+                    <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource CardFrame}" Padding="12,10">
+                        <Grid RowDefinitions="Auto,Auto">
+                            <HorizontalStackLayout Grid.Row="0" Spacing="5">
+                                <Label Text="Banksaldo"
+                                       TextColor="{StaticResource TextSecondary}"
+                                       FontSize="11"
+                                       VerticalOptions="Center" />
+                                <Button Text="✏️"
+                                        BackgroundColor="Transparent"
+                                        TextColor="{StaticResource Primary}"
+                                        FontSize="14"
+                                        Padding="2"
+                                        Margin="0"
+                                        WidthRequest="24"
+                                        HeightRequest="24"
+                                        VerticalOptions="Center"
+                                        Clicked="OnEditBankBalanceClicked" />
+                            </HorizontalStackLayout>
+                            <Label Grid.Row="1"
+                                   x:Name="BankBalanceLabel"
+                                   Text="€ 0"
+                                   TextColor="{StaticResource Success}"
+                                   FontSize="15"
+                                   FontAttributes="Bold" />
+                        </Grid>
+                    </Frame>
+
+                    <!-- Row 2, Column 0-1 (Full Width): Remaining After Payments -->
+                    <Frame Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource CardFrame}" Padding="14,12" BackgroundColor="{StaticResource Primary}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0"
+                                   Text="Banksaldo - Te betalen"
+                                   TextColor="White"
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   x:Name="RemainingAfterPaymentsLabel"
+                                   Text="€ 0"
+                                   TextColor="White"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </Frame>
+                </Grid>
+
+                <!-- Empty State -->
+                <VerticalStackLayout x:Name="EmptyState" IsVisible="False" Spacing="20" Padding="40" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="💰" FontSize="64" HorizontalOptions="Center" />
+                    <Label Text="Geen data"
+                           TextColor="{StaticResource TextPrimary}"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center" />
+                    <Label Text="Maak budgetten en uitgaven aan om je financiën te tracken"
+                           TextColor="{StaticResource TextSecondary}"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Budgets Section -->
+                <VerticalStackLayout x:Name="BudgetsSection" IsVisible="False" Spacing="10">
+                    <Label Text="💰 Budgetten"
+                           TextColor="{StaticResource TextPrimary}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           Margin="0,10,0,5" />
+
+                    <CollectionView x:Name="BudgetsCollection" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="local:MonthlyBudgetItem">
+                            <Frame Style="{StaticResource CardFrame}" Padding="16" Margin="0,0,0,10">
+                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="10">
+
+                                    <!-- Icon -->
+                                    <Frame Grid.Row="0" Grid.Column="0" Grid.RowSpan="3"
+                                           Padding="0"
+                                           CornerRadius="12"
+                                           BackgroundColor="{StaticResource Success}"
+                                           BorderColor="Transparent"
+                                           HasShadow="False"
+                                           WidthRequest="56"
+                                           HeightRequest="56"
+                                           VerticalOptions="Start">
+                                        <Label Text="💰"
+                                               FontSize="28"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                                    </Frame>
+
+                                    <!-- Header: Name and Magnifying Glass -->
+                                    <Grid Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding Name}"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               FontSize="17"
+                                               FontAttributes="Bold"
+                                               VerticalOptions="Center"
+                                               LineBreakMode="TailTruncation" />
+
+                                        <Button Grid.Column="1"
+                                                Text="🔍"
+                                                BackgroundColor="Transparent"
+                                                TextColor="{StaticResource Primary}"
+                                                FontSize="24"
+                                                Padding="8"
+                                                Margin="0"
+                                                Clicked="OnViewBudgetDetailsClicked"
+                                                CommandParameter="{Binding .}"
+                                                VerticalOptions="Center" />
+                                    </Grid>
+
+                                    <!-- Budget Info -->
+                                    <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding SpentAmount, StringFormat='€ {0:N2}'}"
+                                               TextColor="{StaticResource Warning}"
+                                               FontSize="14"
+                                               FontAttributes="Bold"
+                                               VerticalOptions="Center" />
+
+                                        <Label Grid.Column="1"
+                                               Text="/"
+                                               TextColor="{StaticResource TextSecondary}"
+                                               FontSize="14"
+                                               VerticalOptions="Center" />
+
+                                        <Label Grid.Column="2"
+                                               Text="{Binding BudgetAmount, StringFormat='€ {0:N2}'}"
+                                               TextColor="{StaticResource Primary}"
+                                               FontSize="14"
+                                               FontAttributes="Bold"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+
+                                    <!-- Progress Bar -->
+                                    <ProgressBar Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                                                 Progress="{Binding ProgressPercentage}"
+                                                 ProgressColor="{StaticResource Primary}"
+                                                 HeightRequest="8" />
+
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                </VerticalStackLayout>
+
+                <!-- Recurring Expenses Section -->
+                <VerticalStackLayout x:Name="RecurringExpensesSection" IsVisible="False" Spacing="10">
+                    <Label Text="💳 Terugkerende Uitgaven"
+                           TextColor="{StaticResource TextPrimary}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           Margin="0,20,0,5" />
+
+                    <CollectionView x:Name="ExpensesCollection" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="local:MonthlyExpenseItem">
+                                <Frame Style="{StaticResource CardFrame}" Padding="16" Margin="0,0,0,10">
+                                    <Grid ColumnDefinitions="Auto,Auto,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="8">
+
+                                        <!-- Checkbox -->
+                                        <CheckBox Grid.Row="0" Grid.Column="0" Grid.RowSpan="2"
+                                                  IsChecked="{Binding IsPaid}"
+                                                  Color="{StaticResource Success}"
+                                                  CheckedChanged="OnExpenseCheckedChanged"
+                                                  VerticalOptions="Center" />
+
+                                        <!-- Icon -->
+                                        <Frame Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"
+                                               Padding="0"
+                                               CornerRadius="12"
+                                               BackgroundColor="{StaticResource Primary}"
+                                               BorderColor="Transparent"
+                                               HasShadow="False"
+                                               WidthRequest="48"
+                                               HeightRequest="48"
+                                               VerticalOptions="Center">
+                                            <Label Text="💳"
+                                                   FontSize="24"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Frame>
+
+                                        <!-- Name and Amount -->
+                                        <Grid Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding Name}"
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   FontSize="16"
+                                                   FontAttributes="Bold"
+                                                   VerticalOptions="Center"
+                                                   LineBreakMode="TailTruncation" />
+
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Amount, StringFormat='€ {0:N2}'}"
+                                                   TextColor="{StaticResource Primary}"
+                                                   FontSize="16"
+                                                   FontAttributes="Bold"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+
+                                        <!-- Description and Day -->
+                                        <HorizontalStackLayout Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Spacing="10">
+                                            <Label Text="{Binding Description}"
+                                                   TextColor="{StaticResource TextSecondary}"
+                                                   FontSize="13"
+                                                   LineBreakMode="TailTruncation"
+                                                   VerticalOptions="Center"
+                                                   HorizontalOptions="StartAndExpand" />
+
+                                            <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                                <Label Text="📅"
+                                                       FontSize="12"
+                                                       VerticalOptions="Center" />
+                                                <Label Text="{Binding DayOfMonth, StringFormat='Dag {0}'}"
+                                                       TextColor="{StaticResource TextSecondary}"
+                                                       FontSize="12"
+                                                       VerticalOptions="Center" />
+                                            </HorizontalStackLayout>
+                                        </HorizontalStackLayout>
+
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+                <!-- One-Time Expenses Section -->
+                <VerticalStackLayout x:Name="OneTimeExpensesSection" Spacing="10" Margin="0,20,0,0">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,5">
+                        <Label Grid.Column="0"
+                               Text="🛒 Eenmalige Uitgaven"
+                               TextColor="{StaticResource TextPrimary}"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+
+                        <Button Grid.Column="1"
+                                Text="+"
+                                Style="{StaticResource PrimaryButton}"
+                                WidthRequest="40"
+                                HeightRequest="40"
+                                CornerRadius="20"
+                                FontSize="24"
+                                Padding="0"
+                                Clicked="OnAddOneTimeExpenseClicked" />
+                    </Grid>
+
+                    <CollectionView x:Name="OneTimeExpensesCollection" SelectionMode="None" IsVisible="False">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="local:OneTimeExpenseItem">
+                                <Frame Style="{StaticResource CardFrame}" Padding="16" Margin="0,0,0,10">
+                                    <Grid ColumnDefinitions="Auto,Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="8">
+
+                                        <!-- Checkbox -->
+                                        <CheckBox Grid.Row="0" Grid.Column="0" Grid.RowSpan="3"
+                                                  IsChecked="{Binding IsPaid}"
+                                                  Color="{StaticResource Success}"
+                                                  CheckedChanged="OnOneTimeExpenseCheckedChanged"
+                                                  VerticalOptions="Center" />
+
+                                        <!-- Icon -->
+                                        <Frame Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"
+                                               Padding="0"
+                                               CornerRadius="12"
+                                               BackgroundColor="{StaticResource Warning}"
+                                               BorderColor="Transparent"
+                                               HasShadow="False"
+                                               WidthRequest="48"
+                                               HeightRequest="48"
+                                               VerticalOptions="Center">
+                                            <Label Text="🛒"
+                                                   FontSize="24"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Frame>
+
+                                        <!-- Name and Amount -->
+                                        <Grid Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding Name}"
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   FontSize="16"
+                                                   FontAttributes="Bold"
+                                                   VerticalOptions="Center"
+                                                   LineBreakMode="TailTruncation" />
+
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Amount, StringFormat='€ {0:N2}'}"
+                                                   TextColor="{StaticResource Warning}"
+                                                   FontSize="16"
+                                                   FontAttributes="Bold"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+
+                                        <!-- Description -->
+                                        <Label Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+                                               Text="{Binding Description}"
+                                               TextColor="{StaticResource TextSecondary}"
+                                               FontSize="13"
+                                               LineBreakMode="TailTruncation"
+                                               VerticalOptions="Center"
+                                               IsVisible="{Binding HasDescription}" />
+
+                                        <!-- Date and Actions -->
+                                        <Grid Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                            <HorizontalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                                                <Label Text="📅"
+                                                       FontSize="12"
+                                                       VerticalOptions="Center" />
+                                                <Label Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}"
+                                                       TextColor="{StaticResource TextSecondary}"
+                                                       FontSize="12"
+                                                       VerticalOptions="Center" />
+                                            </HorizontalStackLayout>
+
+                                            <HorizontalStackLayout Grid.Column="1" Spacing="5">
+                                                <Button Text="✏️"
+                                                        BackgroundColor="Transparent"
+                                                        TextColor="{StaticResource Primary}"
+                                                        FontSize="18"
+                                                        Padding="8"
+                                                        Margin="0"
+                                                        Clicked="OnEditOneTimeExpenseClicked"
+                                                        CommandParameter="{Binding .}" />
+
+                                                <Button Text="🗑️"
+                                                        BackgroundColor="Transparent"
+                                                        TextColor="{StaticResource Error}"
+                                                        FontSize="18"
+                                                        Padding="8"
+                                                        Margin="0"
+                                                        Clicked="OnDeleteOneTimeExpenseClicked"
+                                                        CommandParameter="{Binding .}" />
+                                            </HorizontalStackLayout>
+                                        </Grid>
+
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

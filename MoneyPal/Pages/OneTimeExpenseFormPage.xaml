@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MoneyPal.Pages.OneTimeExpenseFormPage"
+             Title="Eenmalige Uitgave">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <!-- Name -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Naam *"
+                       TextColor="{StaticResource TextPrimary}"
+                       FontSize="14"
+                       FontAttributes="Bold" />
+                <Frame Style="{StaticResource CardFrame}" Padding="0">
+                    <Entry x:Name="NameEntry"
+                           Placeholder="bijv. Autoreparatie"
+                           TextColor="{StaticResource TextPrimary}"
+                           PlaceholderColor="{StaticResource TextSecondary}"
+                           BackgroundColor="Transparent" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Amount -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Bedrag *"
+                       TextColor="{StaticResource TextPrimary}"
+                       FontSize="14"
+                       FontAttributes="Bold" />
+                <Frame Style="{StaticResource CardFrame}" Padding="0">
+                    <Entry x:Name="AmountEntry"
+                           Placeholder="0.00"
+                           Keyboard="Numeric"
+                           TextColor="{StaticResource TextPrimary}"
+                           PlaceholderColor="{StaticResource TextSecondary}"
+                           BackgroundColor="Transparent" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Date -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Datum *"
+                       TextColor="{StaticResource TextPrimary}"
+                       FontSize="14"
+                       FontAttributes="Bold" />
+                <Frame Style="{StaticResource CardFrame}" Padding="12">
+                    <DatePicker x:Name="DatePickerControl"
+                                TextColor="{StaticResource TextPrimary}"
+                                BackgroundColor="Transparent"
+                                Format="dd-MM-yyyy" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Description -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Beschrijving"
+                       TextColor="{StaticResource TextPrimary}"
+                       FontSize="14"
+                       FontAttributes="Bold" />
+                <Frame Style="{StaticResource CardFrame}" Padding="12">
+                    <Editor x:Name="DescriptionEditor"
+                            Placeholder="Optionele notitie"
+                            HeightRequest="100"
+                            TextColor="{StaticResource TextPrimary}"
+                            PlaceholderColor="{StaticResource TextSecondary}"
+                            BackgroundColor="Transparent"
+                            AutoSize="TextChanges" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,20,0,0">
+                <Button Grid.Column="0"
+                        Text="Annuleren"
+                        Style="{StaticResource SecondaryButton}"
+                        Clicked="OnCancelClicked" />
+
+                <Button Grid.Column="1"
+                        Text="Opslaan"
+                        Style="{StaticResource PrimaryButton}"
+                        Clicked="OnSaveClicked" />
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

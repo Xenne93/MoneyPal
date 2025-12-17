@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MoneyPal.Pages.TransactionFormPage"
+             Title="Uitgave">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <Label x:Name="PageTitle" Text="Nieuwe Uitgave"
+                   Style="{StaticResource PageTitleLabel}" />
+
+            <!-- Budget (read-only) -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Budget" TextColor="{StaticResource TextPrimary}" FontSize="14" FontAttributes="Bold" />
+                <Frame Style="{StaticResource CardFrame}" Padding="12">
+                    <Label x:Name="BudgetLabel"
+                           Text="Selecteer budget..."
+                           TextColor="{StaticResource TextPrimary}"
+                           FontSize="16" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Name -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Naam" TextColor="{StaticResource TextPrimary}" FontSize="14" FontAttributes="Bold" />
+                <Entry x:Name="NameEntry" Placeholder="Bijv. Albert Heijn" />
+            </VerticalStackLayout>
+
+            <!-- Amount -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Bedrag" TextColor="{StaticResource TextPrimary}" FontSize="14" FontAttributes="Bold" />
+                <Entry x:Name="AmountEntry"
+                       Placeholder="0,00"
+                       Keyboard="Numeric" />
+            </VerticalStackLayout>
+
+            <!-- Date -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Datum" TextColor="{StaticResource TextPrimary}" FontSize="14" FontAttributes="Bold" />
+                <DatePicker x:Name="DatePicker"
+                            Format="dd MMMM yyyy"
+                            TextColor="{StaticResource TextPrimary}"
+                            BackgroundColor="{StaticResource Surface}"
+                            MinimumDate="01/01/2020"
+                            MaximumDate="12/31/2030" />
+            </VerticalStackLayout>
+
+            <!-- Description -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Beschrijving (optioneel)" TextColor="{StaticResource TextPrimary}" FontSize="14" FontAttributes="Bold" />
+                <Editor x:Name="DescriptionEditor"
+                        Placeholder="Voeg een beschrijving toe..."
+                        HeightRequest="100"
+                        BackgroundColor="{StaticResource Surface}"
+                        TextColor="{StaticResource TextPrimary}" />
+            </VerticalStackLayout>
+
+            <!-- Buttons -->
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="End" Margin="0,20,0,0">
+                <Button Text="Annuleren"
+                        Style="{StaticResource SecondaryButton}"
+                        Clicked="OnCancelClicked" />
+                <Button Text="Opslaan"
+                        Style="{StaticResource PrimaryButton}"
+                        Clicked="OnSaveClicked" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

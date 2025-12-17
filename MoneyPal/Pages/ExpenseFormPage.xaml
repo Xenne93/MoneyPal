@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MoneyPal.Pages.ExpenseFormPage"
+             Title="Uitgave">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <Label x:Name="PageTitle" Text="Nieuwe Uitgave"
+                   Style="{StaticResource PageTitleLabel}" />
+
+            <Entry x:Name="NameEntry"
+                   Placeholder="Naam" />
+
+            <Entry x:Name="AmountEntry"
+                   Placeholder="Bedrag"
+                   Keyboard="Numeric" />
+
+            <Entry x:Name="DayEntry"
+                   Placeholder="Dag van de maand (1-31)"
+                   Keyboard="Numeric" />
+
+            <Picker x:Name="CategoryPicker"
+                    Title="Selecteer categorie" />
+
+            <Editor x:Name="DescriptionEditor"
+                    Placeholder="Beschrijving (optioneel)"
+                    HeightRequest="100" />
+
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="End">
+                <Button Text="Annuleren"
+                        Style="{StaticResource SecondaryButton}"
+                        Clicked="OnCancelClicked" />
+                <Button Text="Opslaan"
+                        Style="{StaticResource PrimaryButton}"
+                        Clicked="OnSaveClicked" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

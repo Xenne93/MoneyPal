@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="MoneyPal.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:MoneyPal.Pages"
+    Shell.FlyoutBehavior="Disabled">
+
+    <TabBar>
+        <ShellContent
+            Title="Home"
+            ContentTemplate="{DataTemplate pages:HomePage}"
+            Route="home">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="🏠" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <ShellContent
+            Title="Uitgaven"
+            ContentTemplate="{DataTemplate pages:RecurringExpensesPage}"
+            Route="expenses">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="💳" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <ShellContent
+            Title="Inkomsten"
+            ContentTemplate="{DataTemplate pages:IncomesPage}"
+            Route="incomes">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="💵" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <ShellContent
+            Title="Maandoverzicht"
+            ContentTemplate="{DataTemplate pages:MonthlyOverviewPage}"
+            Route="monthly">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="📅" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <ShellContent
+            Title="Budgetten"
+            ContentTemplate="{DataTemplate pages:BudgetsPage}"
+            Route="budgets">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="💰" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
+            </ShellContent.Icon>
+        </ShellContent>
+    </TabBar>
+
+</Shell>

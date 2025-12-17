@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:MoneyPal.Models"
+             x:Class="MoneyPal.Pages.RecurringExpensesPage"
+             Title="Uitgaven">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Header with Add Button -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="20">
+            <Label x:Name="SubtitleLabel"
+                   Grid.Column="0"
+                   TextColor="{StaticResource TextSecondary}"
+                   FontSize="14"
+                   VerticalOptions="Center"
+                   IsVisible="False" />
+
+            <Button Grid.Column="1"
+                    Text="➕"
+                    Style="{StaticResource PrimaryButton}"
+                    VerticalOptions="Center"
+                    Clicked="OnAddExpenseClicked"
+                    WidthRequest="50"
+                    HeightRequest="50" />
+        </Grid>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="ContentLayout" Spacing="10" Padding="20,0,20,20">
+
+                <!-- Empty state will be added dynamically -->
+                <VerticalStackLayout x:Name="EmptyState" IsVisible="False" Spacing="20" Padding="40" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="📊" FontSize="64" HorizontalOptions="Center" />
+                    <Label x:Name="NoExpensesLabel" Text="Geen uitgaven"
+                           TextColor="{StaticResource TextPrimary}"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center" />
+                    <Label x:Name="AddFirstExpenseLabel" Text="Voeg je eerste terugkerende uitgave toe"
+                           TextColor="{StaticResource TextSecondary}"
+                           FontSize="14"
+                           HorizontalOptions="Center" />
+                    <Button Text="➕ Uitgave toevoegen"
+                            Style="{StaticResource PrimaryButton}"
+                            Clicked="OnAddExpenseClicked" />
+                </VerticalStackLayout>
+
+                <!-- Expenses list -->
+                <CollectionView x:Name="ExpensesCollection" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:RecurringExpense">
+                            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="12">
+
+                                    <!-- Category Icon -->
+                                    <Frame Grid.Row="0" Grid.Column="0" Grid.RowSpan="3"
+                                           Padding="0"
+                                           CornerRadius="12"
+                                           BackgroundColor="{StaticResource Primary}"
+                                           BorderColor="Transparent"
+                                           HasShadow="False"
+                                           WidthRequest="56"
+                                           HeightRequest="56"
+                                           VerticalOptions="Start">
+                                        <Label Text="💳"
+                                               FontSize="28"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                                    </Frame>
+
+                                    <!-- Header: Name and Amount -->
+                                    <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding Name}"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               FontSize="17"
+                                               FontAttributes="Bold"
+                                               VerticalOptions="Center"
+                                               LineBreakMode="TailTruncation" />
+
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Amount, StringFormat='€ {0:N2}'}"
+                                               TextColor="{StaticResource Primary}"
+                                               FontSize="18"
+                                               FontAttributes="Bold"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+
+                                    <!-- Description -->
+                                    <Label Grid.Row="1" Grid.Column="1"
+                                           Text="{Binding Description}"
+                                           TextColor="{StaticResource TextSecondary}"
+                                           FontSize="13"
+                                           LineBreakMode="WordWrap"
+                                           MaxLines="2" />
+
+                                    <!-- Footer: Day and Actions -->
+                                    <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                        <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                            <Label Text="📅"
+                                                   FontSize="14"
+                                                   VerticalOptions="Center" />
+                                            <Label Text="{Binding DayOfMonth, StringFormat='Dag {0}'}"
+                                                   TextColor="{StaticResource TextSecondary}"
+                                                   FontSize="13"
+                                                   VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+
+                                        <Button Grid.Column="1"
+                                                Text="✏️"
+                                                BackgroundColor="Transparent"
+                                                TextColor="{StaticResource Primary}"
+                                                FontSize="20"
+                                                Padding="8"
+                                                Margin="0"
+                                                Clicked="OnEditExpenseClicked"
+                                                CommandParameter="{Binding .}" />
+
+                                        <Button Grid.Column="2"
+                                                Text="🗑️"
+                                                BackgroundColor="Transparent"
+                                                TextColor="{StaticResource Error}"
+                                                FontSize="20"
+                                                Padding="8"
+                                                Margin="0"
+                                                Clicked="OnDeleteExpenseClicked"
+                                                CommandParameter="{Binding .}" />
+                                    </Grid>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

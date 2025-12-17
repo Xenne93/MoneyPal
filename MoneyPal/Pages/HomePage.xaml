@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MoneyPal.Pages.HomePage"
+             Title="Dashboard">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="0">
+
+            <!-- Header -->
+            <VerticalStackLayout Padding="20,20,20,0">
+                <Label x:Name="DateLabel"
+                       TextColor="{StaticResource TextSecondary}"
+                       FontSize="14" />
+            </VerticalStackLayout>
+
+            <!-- Stats Grid -->
+            <Grid ColumnDefinitions="*,*"
+                  RowDefinitions="Auto,Auto"
+                  ColumnSpacing="10"
+                  RowSpacing="10"
+                  Padding="20,0">
+
+                <!-- Bank Account Card -->
+                <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource CardFrame}" Margin="0">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="💳" FontSize="32" />
+                        <Label Text="Bankrekening"
+                               TextColor="{StaticResource TextPrimary}"
+                               FontSize="16"
+                               FontAttributes="Bold" />
+                        <Label Text="€ 0,00"
+                               TextColor="{StaticResource Primary}"
+                               FontSize="24"
+                               FontAttributes="Bold" />
+                        <Label Text="Huidig saldo"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Savings Account Card -->
+                <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource CardFrame}" Margin="0">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="🏦" FontSize="32" />
+                        <Label Text="Spaarrekening"
+                               TextColor="{StaticResource TextPrimary}"
+                               FontSize="16"
+                               FontAttributes="Bold" />
+                        <Label Text="€ 0,00"
+                               TextColor="{StaticResource Success}"
+                               FontSize="24"
+                               FontAttributes="Bold" />
+                        <Label Text="Gespaarde bedrag"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Available Card -->
+                <Frame Grid.Row="1" Grid.Column="0" Style="{StaticResource CardFrame}" Margin="0">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="💰" FontSize="32" />
+                        <Label Text="Beschikbaar"
+                               TextColor="{StaticResource TextPrimary}"
+                               FontSize="16"
+                               FontAttributes="Bold" />
+                        <Label Text="€ 0,00"
+                               TextColor="{StaticResource Warning}"
+                               FontSize="24"
+                               FontAttributes="Bold" />
+                        <Label Text="Tot volgende salaris"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Upcoming Expenses Card -->
+                <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource CardFrame}" Margin="0">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="📅" FontSize="32" />
+                        <Label Text="Aankomende lasten"
+                               TextColor="{StaticResource TextPrimary}"
+                               FontSize="16"
+                               FontAttributes="Bold" />
+                        <Label Text="€ 0,00"
+                               TextColor="{StaticResource Error}"
+                               FontSize="24"
+                               FontAttributes="Bold" />
+                        <Label Text="Deze maand"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                </Frame>
+            </Grid>
+
+            <!-- Recent Transactions Section -->
+            <VerticalStackLayout Spacing="10" Padding="0,20,0,0">
+                <HorizontalStackLayout Padding="20,0" Spacing="10" HorizontalOptions="FillAndExpand">
+                    <Label Text="Recente transacties"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0"
+                           HorizontalOptions="StartAndExpand" />
+                    <Label Text="Bekijk alles"
+                           TextColor="{StaticResource Primary}"
+                           FontSize="14"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+                        <Label Text="Geen recente transacties"
+                               TextColor="{StaticResource TextPrimary}"
+                               FontSize="16"
+                               HorizontalOptions="Center" />
+                        <Label Text="Voeg je eerste inkomsten of lasten toe"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="14"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Budget Overview Section -->
+            <VerticalStackLayout Spacing="10" Padding="0,0,0,20">
+                <HorizontalStackLayout Padding="20,0" Spacing="10" HorizontalOptions="FillAndExpand">
+                    <Label Text="Budget overzicht"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0"
+                           HorizontalOptions="StartAndExpand" />
+                    <Label Text="Beheren"
+                           TextColor="{StaticResource Primary}"
+                           FontSize="14"
+                           VerticalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnManageBudgetsClicked" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+                        <Label Text="Geen budgetten aangemaakt"
+                               TextColor="{StaticResource TextPrimary}"
+                               FontSize="16"
+                               HorizontalOptions="Center" />
+                        <Label Text="Start met het aanmaken van je eerste budget"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="14"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
