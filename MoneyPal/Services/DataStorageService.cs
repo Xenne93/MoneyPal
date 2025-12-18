@@ -26,27 +26,45 @@ public class DataStorageService : IDataStorageService
             if (_isInitialized)
                 return;
 
+            Console.WriteLine("Initializing database...");
+
             // Migration: Drop and recreate BankBalance table due to schema change
             try
             {
                 await _database.DropTableAsync<BankBalance>();
+                Console.WriteLine("Dropped BankBalance table for migration");
             }
-            catch
+            catch (Exception ex)
             {
                 // Table might not exist yet, ignore error
+                Console.WriteLine($"Could not drop BankBalance table (may not exist): {ex.Message}");
             }
 
             // Create tables
-            await _database.CreateTableAsync<RecurringExpense>();
-            await _database.CreateTableAsync<Category>();
-            await _database.CreateTableAsync<PaymentRecord>();
-            await _database.CreateTableAsync<Budget>();
-            await _database.CreateTableAsync<BudgetSpending>();
-            await _database.CreateTableAsync<Expense>();
-            await _database.CreateTableAsync<Income>();
-            await _database.CreateTableAsync<BankBalance>();
+            try
+            {
+                await _database.CreateTableAsync<RecurringExpense>();
+                await _database.CreateTableAsync<Category>();
+                await _database.CreateTableAsync<PaymentRecord>();
+                await _database.CreateTableAsync<Budget>();
+                await _database.CreateTableAsync<BudgetSpending>();
+                await _database.CreateTableAsync<Expense>();
+                await _database.CreateTableAsync<Income>();
+                await _database.CreateTableAsync<BankBalance>();
 
-            _isInitialized = true;
+                Console.WriteLine("Database tables created successfully");
+                _isInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating database tables: {ex}");
+                throw;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in InitializeAsync: {ex}");
+            throw;
         }
         finally
         {
@@ -458,15 +476,61 @@ public class DataStorageService : IDataStorageService
     // Bank Balance methods
     public async Task<BankBalance> GetBankBalanceAsync(int month, int year)
     {
-        await InitializeAsync();
-        var balance = await _database.Table<BankBalance>()
-            .Where(b => b.Month == month && b.Year == year)
-            .FirstOrDefaultAsync();
-
-        if (balance == null)
+        try
         {
-            // Create initial balance of 0 for this month
-            balance = new BankBalance
+            await InitializeAsync();
+
+            var balance = await _database.Table<BankBalance>()
+                .Where(b => b.Month == month && b.Year == year)
+                .FirstOrDefaultAsync();
+
+            if (balance == null)
+            {
+                // Create initial balance of 0 for this month
+                balance = new BankBalance
+                {
+                    Id = Guid.NewGuid(),
+                    Month = month,
+                    Year = year,
+                    CurrentBalance = 0,
+                    LastUpdated = DateTime.UtcNow
+                };
+
+                try
+                {
+                    await _database.InsertAsync(balance);
+                }
+                catch (Exception ex)
+                {
+                    // If insert fails (e.g., race condition), try to get it again
+                    Console.WriteLine($"Error inserting bank balance: {ex.Message}");
+                    balance = await _database.Table<BankBalance>()
+                        .Where(b => b.Month == month && b.Year == year)
+                        .FirstOrDefaultAsync();
+
+                    // If still null, return a default balance without saving
+                    if (balance == null)
+                    {
+                        Console.WriteLine("Could not retrieve bank balance after insert failure, returning default");
+                        balance = new BankBalance
+                        {
+                            Id = Guid.NewGuid(),
+                            Month = month,
+                            Year = year,
+                            CurrentBalance = 0,
+                            LastUpdated = DateTime.UtcNow
+                        };
+                    }
+                }
+            }
+
+            return balance;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in GetBankBalanceAsync: {ex}");
+            // Return a default balance instead of throwing
+            return new BankBalance
             {
                 Id = Guid.NewGuid(),
                 Month = month,
@@ -474,10 +538,7 @@ public class DataStorageService : IDataStorageService
                 CurrentBalance = 0,
                 LastUpdated = DateTime.UtcNow
             };
-            await _database.InsertAsync(balance);
         }
-
-        return balance;
     }
 
     public async Task<BankBalance> UpdateBankBalanceAsync(int month, int year, decimal newBalance)

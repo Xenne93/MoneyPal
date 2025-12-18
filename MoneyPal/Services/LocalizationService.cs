@@ -40,7 +40,7 @@ public class LocalizationService : ILocalizationService
     {
         try
         {
-            var fileName = $"Resources/Localization/{languageCode}.json";
+            var fileName = $"Localization/{languageCode}.json";
             using var stream = FileSystem.OpenAppPackageFileAsync(fileName).Result;
             using var reader = new StreamReader(stream);
             var json = reader.ReadToEnd();

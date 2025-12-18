@@ -83,7 +83,7 @@
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
         <!-- Localization files -->
-        <MauiAsset Include="Resources\Localization\*.json" LogicalName="Resources/Localization/%(Filename)%(Extension)" />
+        <MauiAsset Include="Resources\Localization\*.json" LogicalName="Localization/%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>
@@ -91,6 +91,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
         <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
         <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.10" />
+
     </ItemGroup>
 
 </Project>

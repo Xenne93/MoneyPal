@@ -9,13 +9,17 @@ public partial class TransactionFormPage : ContentPage
     private readonly IBudgetService _budgetService;
     private readonly Budget _budget;
     private readonly Expense? _editingExpense;
+    private readonly int _month;
+    private readonly int _year;
 
-    public TransactionFormPage(ITransactionService transactionService, IBudgetService budgetService, Budget budget, Expense? editingExpense = null)
+    public TransactionFormPage(ITransactionService transactionService, IBudgetService budgetService, Budget budget, int month, int year, Expense? editingExpense = null)
     {
         InitializeComponent();
         _transactionService = transactionService;
         _budgetService = budgetService;
         _budget = budget;
+        _month = month;
+        _year = year;
         _editingExpense = editingExpense;
 
         BudgetLabel.Text = $"💰 {_budget.Name}";
@@ -30,8 +34,13 @@ public partial class TransactionFormPage : ContentPage
         }
         else
         {
-            DatePicker.Date = DateTime.Now;
+            // Set date to the first day of the specified month/year
+            DatePicker.Date = new DateTime(_year, _month, 1);
         }
+
+        // Restrict date picker to the specified month
+        DatePicker.MinimumDate = new DateTime(_year, _month, 1);
+        DatePicker.MaximumDate = new DateTime(_year, _month, DateTime.DaysInMonth(_year, _month));
     }
 
     private async void OnCancelClicked(object sender, EventArgs e)

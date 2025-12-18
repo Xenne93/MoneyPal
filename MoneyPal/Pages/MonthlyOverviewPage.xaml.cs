@@ -44,25 +44,52 @@ public partial class MonthlyOverviewPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await LoadData();
+        try
+        {
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            // Log error to console (works on all platforms)
+            System.Diagnostics.Debug.WriteLine($"Error in OnAppearing: {ex}");
+            Console.WriteLine($"Error in OnAppearing: {ex}");
+
+            // Show error dialog on main thread (cross-platform)
+            if (MainThread.IsMainThread)
+            {
+                await DisplayAlert("Fout", $"Er is een fout opgetreden: {ex.Message}", "OK");
+            }
+            else
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await DisplayAlert("Fout", $"Er is een fout opgetreden: {ex.Message}", "OK");
+                });
+            }
+        }
     }
 
     private async Task LoadData()
     {
-        // Update month label
-        var date = new DateTime(_currentYear, _currentMonth, 1);
-        MonthLabel.Text = date.ToString("MMMM yyyy", new CultureInfo("nl-NL"));
+        try
+        {
+            // Update month label
+            var date = new DateTime(_currentYear, _currentMonth, 1);
+            MonthLabel.Text = date.ToString("MMMM yyyy", new CultureInfo("nl-NL"));
 
-        // Get all active budgets
-        var budgets = await _budgetService.GetAllBudgetsAsync();
-        var activeBudgets = budgets.Where(b => b.IsActive).ToList();
+            // Get all active budgets
+            var budgets = await _budgetService.GetAllBudgetsAsync();
+            if (budgets == null) budgets = new List<Budget>();
+            var activeBudgets = budgets.Where(b => b.IsActive).ToList();
 
-        // Get all active recurring expenses
-        var expenses = await _expenseService.GetAllExpensesAsync();
-        var activeExpenses = expenses.Where(e => e.IsActive).ToList();
+            // Get all active recurring expenses
+            var expenses = await _expenseService.GetAllExpensesAsync();
+            if (expenses == null) expenses = new List<RecurringExpense>();
+            var activeExpenses = expenses.Where(e => e.IsActive).ToList();
 
-        // Get one-time expenses for this month
-        var oneTimeExpenses = await _transactionService.GetOneTimeExpensesForMonthAsync(_currentMonth, _currentYear);
+            // Get one-time expenses for this month
+            var oneTimeExpenses = await _transactionService.GetOneTimeExpensesForMonthAsync(_currentMonth, _currentYear);
+            if (oneTimeExpenses == null) oneTimeExpenses = new List<Expense>();
 
         // Check if we have any data
         if (!activeBudgets.Any() && !activeExpenses.Any() && !oneTimeExpenses.Any())
@@ -177,7 +204,7 @@ public partial class MonthlyOverviewPage : ContentPage
                 var item = new OneTimeExpenseItem
                 {
                     ExpenseId = expense.Id,
-                    Name = expense.Name,
+                    Name = expense.Name ?? "",
                     Description = expense.Description ?? "",
                     Amount = expense.Amount,
                     Date = expense.Date,
@@ -209,6 +236,11 @@ public partial class MonthlyOverviewPage : ContentPage
 
         // Load bank balance for current month
         var bankBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
+        if (bankBalance == null)
+        {
+            System.Diagnostics.Debug.WriteLine("Warning: bankBalance is null, creating default");
+            bankBalance = new BankBalance { CurrentBalance = 0 };
+        }
 
         // Calculate remaining after payments (Bank balance - To pay)
         var remainingAfterPayments = bankBalance.CurrentBalance - grandRemaining;
@@ -219,62 +251,107 @@ public partial class MonthlyOverviewPage : ContentPage
         UnpaidLabel.Text = $"€ {grandRemaining:N2}";
         BankBalanceLabel.Text = $"€ {bankBalance.CurrentBalance:N2}";
         RemainingAfterPaymentsLabel.Text = $"€ {remainingAfterPayments:N2}";
+        }
+        catch (Exception ex)
+        {
+            // Log the error with full details (works on all platforms)
+            System.Diagnostics.Debug.WriteLine($"Error in LoadData: {ex}");
+            Console.WriteLine($"Error in LoadData: {ex}");
+
+            // Re-throw so OnAppearing can handle it
+            throw;
+        }
     }
 
     private async Task UpdateSummaryOnly()
     {
-        decimal totalBudget = 0;
-        decimal totalSpent = 0;
-        decimal totalRecurringExpenses = 0;
-        decimal totalRecurringPaid = 0;
-        decimal totalOneTimeExpenses = 0;
-
-        // Calculate budget totals
-        foreach (var item in _budgets)
+        try
         {
-            totalBudget += item.BudgetAmount;
-            totalSpent += item.SpentAmount;
-        }
+            decimal totalBudget = 0;
+            decimal totalSpent = 0;
+            decimal totalRecurringExpenses = 0;
+            decimal totalRecurringPaid = 0;
+            decimal totalOneTimeExpenses = 0;
 
-        // Calculate recurring expense totals
-        foreach (var item in _expenses)
+            // Calculate budget totals
+            if (_budgets != null)
+            {
+                foreach (var item in _budgets)
+                {
+                    totalBudget += item.BudgetAmount;
+                    totalSpent += item.SpentAmount;
+                }
+            }
+
+            // Calculate recurring expense totals
+            if (_expenses != null)
+            {
+                foreach (var item in _expenses)
+                {
+                    totalRecurringExpenses += item.Amount;
+                    if (item.IsPaid)
+                        totalRecurringPaid += item.Amount;
+                }
+            }
+
+            // Calculate one-time expense totals
+            decimal totalOneTimeExpensesPaid = 0;
+            if (_oneTimeExpenses != null)
+            {
+                foreach (var item in _oneTimeExpenses)
+                {
+                    totalOneTimeExpenses += item.Amount;
+                    if (item.IsPaid)
+                        totalOneTimeExpensesPaid += item.Amount;
+                }
+            }
+
+            // Calculate totals (include paid one-time expenses)
+            var grandTotal = totalBudget + totalRecurringExpenses + totalOneTimeExpenses;
+            var grandSpent = totalSpent + totalRecurringPaid + totalOneTimeExpensesPaid;
+            var grandRemaining = (totalBudget - totalSpent) + (totalRecurringExpenses - totalRecurringPaid) + (totalOneTimeExpenses - totalOneTimeExpensesPaid);
+
+            // Load bank balance for current month
+            var bankBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
+            if (bankBalance == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Warning: bankBalance is null in UpdateSummaryOnly");
+                bankBalance = new BankBalance { CurrentBalance = 0 };
+            }
+
+            // Calculate remaining after payments (Bank balance - To pay)
+            var remainingAfterPayments = bankBalance.CurrentBalance - grandRemaining;
+
+            // Update summary
+            TotalLabel.Text = $"€ {grandTotal:N2}";
+            PaidLabel.Text = $"€ {grandSpent:N2}";
+            UnpaidLabel.Text = $"€ {grandRemaining:N2}";
+            BankBalanceLabel.Text = $"€ {bankBalance.CurrentBalance:N2}";
+            RemainingAfterPaymentsLabel.Text = $"€ {remainingAfterPayments:N2}";
+        }
+        catch (Exception ex)
         {
-            totalRecurringExpenses += item.Amount;
-            if (item.IsPaid)
-                totalRecurringPaid += item.Amount;
+            System.Diagnostics.Debug.WriteLine($"Error in UpdateSummaryOnly: {ex}");
+            Console.WriteLine($"Error in UpdateSummaryOnly: {ex}");
         }
-
-        // Calculate one-time expense totals
-        decimal totalOneTimeExpensesPaid = 0;
-        foreach (var item in _oneTimeExpenses)
-        {
-            totalOneTimeExpenses += item.Amount;
-            if (item.IsPaid)
-                totalOneTimeExpensesPaid += item.Amount;
-        }
-
-        // Calculate totals (include paid one-time expenses)
-        var grandTotal = totalBudget + totalRecurringExpenses + totalOneTimeExpenses;
-        var grandSpent = totalSpent + totalRecurringPaid + totalOneTimeExpensesPaid;
-        var grandRemaining = (totalBudget - totalSpent) + (totalRecurringExpenses - totalRecurringPaid) + (totalOneTimeExpenses - totalOneTimeExpensesPaid);
-
-        // Load bank balance for current month
-        var bankBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
-
-        // Calculate remaining after payments (Bank balance - To pay)
-        var remainingAfterPayments = bankBalance.CurrentBalance - grandRemaining;
-
-        // Update summary
-        TotalLabel.Text = $"€ {grandTotal:N2}";
-        PaidLabel.Text = $"€ {grandSpent:N2}";
-        UnpaidLabel.Text = $"€ {grandRemaining:N2}";
-        BankBalanceLabel.Text = $"€ {bankBalance.CurrentBalance:N2}";
-        RemainingAfterPaymentsLabel.Text = $"€ {remainingAfterPayments:N2}";
     }
 
     private async void OnViewBudgetDetailsClicked(object sender, EventArgs e)
     {
-        if (sender is Button button && button.CommandParameter is MonthlyBudgetItem item)
+        MonthlyBudgetItem? item = null;
+
+        // Support both Button and TapGestureRecognizer
+        if (sender is Button button && button.CommandParameter is MonthlyBudgetItem buttonItem)
+        {
+            item = buttonItem;
+        }
+        else if (sender is Border border && border.GestureRecognizers.Count > 0)
+        {
+            var tapGesture = border.GestureRecognizers[0] as TapGestureRecognizer;
+            item = tapGesture?.CommandParameter as MonthlyBudgetItem;
+        }
+
+        if (item != null)
         {
             await Navigation.PushAsync(new BudgetDetailPage(_transactionService, _budgetService, item.Budget, _currentMonth, _currentYear));
         }
@@ -382,7 +459,20 @@ public partial class MonthlyOverviewPage : ContentPage
 
     private async void OnEditOneTimeExpenseClicked(object sender, EventArgs e)
     {
-        if (sender is Button button && button.CommandParameter is OneTimeExpenseItem item)
+        OneTimeExpenseItem? item = null;
+
+        // Support both Button and TapGestureRecognizer
+        if (sender is Button button && button.CommandParameter is OneTimeExpenseItem buttonItem)
+        {
+            item = buttonItem;
+        }
+        else if (sender is Border border && border.GestureRecognizers.Count > 0)
+        {
+            var tapGesture = border.GestureRecognizers[0] as TapGestureRecognizer;
+            item = tapGesture?.CommandParameter as OneTimeExpenseItem;
+        }
+
+        if (item != null)
         {
             var formPage = new OneTimeExpenseFormPage(_transactionService, _localization, item.ExpenseId);
             await Navigation.PushModalAsync(new NavigationPage(formPage));
@@ -391,7 +481,20 @@ public partial class MonthlyOverviewPage : ContentPage
 
     private async void OnDeleteOneTimeExpenseClicked(object sender, EventArgs e)
     {
-        if (sender is Button button && button.CommandParameter is OneTimeExpenseItem item)
+        OneTimeExpenseItem? item = null;
+
+        // Support both Button and TapGestureRecognizer
+        if (sender is Button button && button.CommandParameter is OneTimeExpenseItem buttonItem)
+        {
+            item = buttonItem;
+        }
+        else if (sender is Border border && border.GestureRecognizers.Count > 0)
+        {
+            var tapGesture = border.GestureRecognizers[0] as TapGestureRecognizer;
+            item = tapGesture?.CommandParameter as OneTimeExpenseItem;
+        }
+
+        if (item != null)
         {
             bool confirm = await DisplayAlert(
                 "Verwijderen",

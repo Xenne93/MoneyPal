@@ -60,14 +60,18 @@ public partial class BudgetDetailPage : ContentPage
 
     private async void OnAddExpenseClicked(object sender, EventArgs e)
     {
-        await Navigation.PushModalAsync(new TransactionFormPage(_transactionService, _budgetService, _budget));
+        await Navigation.PushModalAsync(new TransactionFormPage(_transactionService, _budgetService, _budget, _month, _year));
+        // Reload data when modal is closed
+        await LoadData();
     }
 
     private async void OnEditExpenseClicked(object sender, EventArgs e)
     {
         if (sender is Button button && button.CommandParameter is Expense expense)
         {
-            await Navigation.PushModalAsync(new TransactionFormPage(_transactionService, _budgetService, _budget, expense));
+            await Navigation.PushModalAsync(new TransactionFormPage(_transactionService, _budgetService, _budget, _month, _year, expense));
+            // Reload data when modal is closed
+            await LoadData();
         }
     }
 
