@@ -3,10 +3,15 @@
     "Name": "MoneyPal",
     "Title": "MoneyPal - Budget Beheer"
   },
+  "Language": {
+    "Name": "Nederlands",
+    "Code": "nl-NL"
+  },
   "Navigation": {
+    "Home": "Home",
     "Dashboard": "Dashboard",
     "Income": "Inkomsten",
-    "Expenses": "Vaste Lasten",
+    "Expenses": "Uitgaven",
     "Budgets": "Budgetten",
     "Accounts": "Rekeningen"
   },
@@ -32,6 +37,7 @@
   "Expenses": {
     "Title": "Vaste Lasten",
     "Add": "Toevoegen",
+    "AddButton": "➕ Uitgave toevoegen",
     "Edit": "Bewerken",
     "Delete": "Verwijderen",
     "Cancel": "Annuleren",
@@ -41,8 +47,8 @@
     "DayOfMonth": "Dag van de Maand",
     "Category": "Categorie",
     "Description": "Beschrijving",
-    "NoExpenses": "Nog geen vaste lasten",
-    "AddFirstExpense": "Voeg je eerste vaste last toe om te beginnen",
+    "NoExpenses": "Geen uitgaven",
+    "AddFirstExpense": "Voeg je eerste terugkerende uitgave toe",
     "Total": "Totaal",
     "PerMonth": "per maand",
     "Day": "Dag {0}",
@@ -63,41 +69,81 @@
       "Other": "Overig"
     }
   },
+  "Income": {
+    "Title": "Inkomsten",
+    "TotalMonthlyIncome": "Totaal Maandelijks Inkomen",
+    "NoIncomes": "Geen inkomsten",
+    "AddFirstIncome": "Voeg je eerste inkomen toe om je financiën te tracken",
+    "AddButton": "➕ Inkomen toevoegen",
+    "Day": "Dag {0}",
+    "DeleteConfirmMessage": "Weet je zeker dat je '{0}' wilt verwijderen?"
+  },
   "MonthlyOverview": {
     "Title": "Maandoverzicht",
-    "TotalExpenses": "Totale Lasten",
+    "TotalExpenses": "Totale lasten",
+    "Spent": "Uitgegeven",
+    "ToPay": "Te betalen",
+    "BankBalance": "Banksaldo",
+    "UpdateBankBalance": "Banksaldo Bijwerken",
+    "EnterBankBalanceFor": "Vul je banksaldo in voor",
+    "EnterValidAmount": "Vul een geldig bedrag in",
+    "RemainingAfterPayments": "Resterend na betalingen",
+    "BankBalanceMinusToPay": "Banksaldo - Te betalen",
+    "Budgets": "Budgetten",
+    "RecurringExpenses": "Terugkerende Uitgaven",
+    "OneTimeExpenses": "Eenmalige Uitgaven",
+    "NoData": "Geen data",
+    "CreateBudgetsAndExpenses": "Maak budgetten en uitgaven aan om je financiën te tracken",
+    "Of": "van",
     "Unpaid": "Openstaand",
     "UnpaidCount": "Open Lasten",
     "NoExpenses": "Geen vaste lasten voor deze maand",
-    "Budgets": "Budgetten",
     "OverBudget": "Over budget",
     "Remaining": "over"
   },
   "Budgets": {
     "Title": "Budgetten",
     "Add": "Toevoegen",
+    "AddButton": "➕ Budget toevoegen",
     "Edit": "Bewerken",
     "Name": "Naam",
     "Amount": "Bedrag",
     "Category": "Categorie",
     "Description": "Beschrijving",
     "SelectCategory": "Kies een categorie",
+    "Total": "Totaal",
+    "Fixed": "Vast",
+    "Flexible": "Flexibel",
+    "FixedLabel": "VAST",
     "TotalBudget": "Totaal Budget",
     "ActiveBudgets": "Actieve Budgetten",
     "FixedExpenses": "Vaste Lasten",
     "FlexibleBudget": "Flexibel Budget",
     "PerMonth": "per maand",
-    "NoBudgets": "Nog geen budgetten",
-    "AddFirstBudget": "Maak je eerste budget om uitgaven bij te houden",
+    "NoBudgets": "Geen budgetten",
+    "AddFirstBudget": "Maak je eerste budget aan om je uitgaven te volgen",
     "DeleteConfirm": "Weet je zeker dat je dit budget wilt verwijderen?",
+    "DeleteConfirmMessage": "Weet je zeker dat je '{0}' wilt verwijderen?",
     "CountAsFixedExpense": "Volledig meetellen als vaste last",
     "CountAsFixedExpenseHint": "Dit budget wordt meegeteld als verplichte maandelijkse uitgave",
     "FixedExpense": "Vast"
+  },
+  "Settings": {
+    "Title": "Instellingen",
+    "Language": "Taal",
+    "SelectLanguage": "Selecteer taal",
+    "LanguageChanged": "Taal gewijzigd",
+    "AppWillReload": "De app zal opnieuw laden om de taalwijziging toe te passen",
+    "About": "Over",
+    "Version": "Versie",
+    "Appearance": "Weergave",
+    "General": "Algemeen"
   },
   "Common": {
     "Currency": "€",
     "Edit": "Bewerken",
     "Delete": "Verwijderen",
+    "Confirm": "Bevestigen",
     "Cancel": "Annuleren",
     "Save": "Opslaan",
     "Close": "Sluiten",
@@ -106,6 +152,7 @@
     "Loading": "Laden...",
     "Error": "Fout",
     "Success": "Succes",
-    "Optional": "optioneel"
+    "Optional": "optioneel",
+    "OK": "OK"
   }
 }

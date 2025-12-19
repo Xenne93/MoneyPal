@@ -14,6 +14,26 @@ public partial class IncomesPage : ContentPage
         InitializeComponent();
         _incomeService = incomeService;
         _localization = localization;
+
+        // Subscribe to language changes
+        _localization.LanguageChanged += OnLanguageChanged;
+
+        // Update localized texts
+        UpdateLocalizedTexts();
+    }
+
+    private void UpdateLocalizedTexts()
+    {
+        Title = _localization.GetString("Income.Title");
+        TotalMonthlyIncomeLabel.Text = _localization.GetString("Income.TotalMonthlyIncome");
+        NoIncomesLabel.Text = _localization.GetString("Income.NoIncomes");
+        AddFirstIncomeLabel.Text = _localization.GetString("Income.AddFirstIncome");
+        AddIncomeButton.Text = _localization.GetString("Income.AddButton");
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        UpdateLocalizedTexts();
     }
 
     protected override async void OnAppearing()
@@ -61,10 +81,10 @@ public partial class IncomesPage : ContentPage
         if (sender is Button button && button.CommandParameter is Income income)
         {
             bool confirm = await DisplayAlert(
-                "Verwijderen",
-                $"Weet je zeker dat je '{income.Name}' wilt verwijderen?",
-                "Ja",
-                "Nee");
+                _localization.GetString("Common.Delete"),
+                string.Format(_localization.GetString("Income.DeleteConfirmMessage"), income.Name),
+                _localization.GetString("Common.Yes"),
+                _localization.GetString("Common.No"));
 
             if (confirm)
             {

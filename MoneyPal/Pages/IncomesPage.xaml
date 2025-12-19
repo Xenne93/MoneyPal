@@ -48,7 +48,8 @@
                         </Frame>
 
                         <VerticalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
-                            <Label Text="Totaal Maandelijks Inkomen"
+                            <Label x:Name="TotalMonthlyIncomeLabel"
+                                   Text="Totaal Maandelijks Inkomen"
                                    TextColor="{StaticResource TextSecondary}"
                                    FontSize="13" />
                             <Label x:Name="TotalIncomeLabel"
@@ -63,17 +64,20 @@
                 <!-- Empty state -->
                 <VerticalStackLayout x:Name="EmptyState" IsVisible="False" Spacing="20" Padding="40" HorizontalOptions="Center" VerticalOptions="Center">
                     <Label Text="💵" FontSize="64" HorizontalOptions="Center" />
-                    <Label Text="Geen inkomsten"
+                    <Label x:Name="NoIncomesLabel"
+                           Text="Geen inkomsten"
                            TextColor="{StaticResource TextPrimary}"
                            FontSize="20"
                            FontAttributes="Bold"
                            HorizontalOptions="Center" />
-                    <Label Text="Voeg je eerste inkomen toe om je financiën te tracken"
+                    <Label x:Name="AddFirstIncomeLabel"
+                           Text="Voeg je eerste inkomen toe om je financiën te tracken"
                            TextColor="{StaticResource TextSecondary}"
                            FontSize="14"
                            HorizontalOptions="Center"
                            HorizontalTextAlignment="Center" />
-                    <Button Text="➕ Inkomen toevoegen"
+                    <Button x:Name="AddIncomeButton"
+                            Text="➕ Inkomen toevoegen"
                             Style="{StaticResource PrimaryButton}"
                             Clicked="OnAddIncomeClicked" />
                 </VerticalStackLayout>
