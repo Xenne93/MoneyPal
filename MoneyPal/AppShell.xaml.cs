@@ -1,3 +1,4 @@
+using MoneyPal.Pages;
 using MoneyPal.Services;
 
 namespace MoneyPal;
@@ -11,6 +12,11 @@ public partial class AppShell : Shell
         InitializeComponent();
         _localization = localization;
 
+        // Register routes for pages not in TabBar
+        Routing.RegisterRoute("budgets", typeof(BudgetsPage));
+        Routing.RegisterRoute("expenses", typeof(RecurringExpensesPage));
+        Routing.RegisterRoute("incomes", typeof(IncomesPage));
+
         // Subscribe to language changes
         _localization.LanguageChanged += OnLanguageChanged;
 
@@ -22,10 +28,7 @@ public partial class AppShell : Shell
     {
         // Update all tab titles with localized text
         HomeTab.Title = _localization.GetString("Navigation.Home");
-        ExpensesTab.Title = _localization.GetString("Navigation.Expenses");
-        IncomesTab.Title = _localization.GetString("Navigation.Income");
         MonthlyTab.Title = _localization.GetString("MonthlyOverview.Title");
-        BudgetsTab.Title = _localization.GetString("Navigation.Budgets");
         SettingsTab.Title = _localization.GetString("Settings.Title");
     }
 

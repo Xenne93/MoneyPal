@@ -89,4 +89,41 @@ public class PaymentService : IPaymentService
 
         return count;
     }
+
+    // Income tracking methods
+    public async Task<bool> MarkIncomeAsReceivedAsync(Guid incomeId, int month, int year)
+    {
+        var record = new IncomeRecord
+        {
+            IncomeId = incomeId,
+            Month = month,
+            Year = year,
+            IsReceived = true,
+            ReceivedDate = DateTime.UtcNow
+        };
+
+        await ((DataStorageService)_storage).UpsertIncomeRecordAsync(record);
+        return true;
+    }
+
+    public async Task<bool> MarkIncomeAsNotReceivedAsync(Guid incomeId, int month, int year)
+    {
+        var record = new IncomeRecord
+        {
+            IncomeId = incomeId,
+            Month = month,
+            Year = year,
+            IsReceived = false,
+            ReceivedDate = null
+        };
+
+        await ((DataStorageService)_storage).UpsertIncomeRecordAsync(record);
+        return true;
+    }
+
+    public async Task<bool> IsIncomeReceivedAsync(Guid incomeId, int month, int year)
+    {
+        var record = await ((DataStorageService)_storage).GetIncomeRecordAsync(incomeId, month, year);
+        return record?.IsReceived ?? false;
+    }
 }

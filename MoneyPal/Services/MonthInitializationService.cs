@@ -22,9 +22,10 @@ namespace MoneyPal.Services
 
         /// <summary>
         /// Initializes a month by creating snapshots of current budgets, recurring expenses, and income.
-        /// Also carries over bank balance from previous month.
+        /// Optionally carries over bank balance from previous month.
         /// </summary>
-        public async Task InitializeMonthAsync(int month, int year)
+        /// <param name="copyPreviousBalance">If true, carries over the bank balance from the previous month. If false, starts with 0.</param>
+        public async Task InitializeMonthAsync(int month, int year, bool copyPreviousBalance = true)
         {
             // Check if already initialized
             if (await IsMonthInitializedAsync(month, year))
@@ -105,21 +106,36 @@ namespace MoneyPal.Services
                 };
 
                 await _dataStorage.InsertMonthlyIncomeSnapshotAsync(snapshot);
+
+                // Create income record for this income (initially not received)
+                var incomeRecord = new IncomeRecord
+                {
+                    IncomeId = income.Id,
+                    Month = month,
+                    Year = year,
+                    IsReceived = false,
+                    ReceivedDate = null
+                };
+
+                await _dataStorage.UpsertIncomeRecordAsync(incomeRecord);
             }
 
-            // 4. Carry over bank balance from previous month
-            var previousMonth = month == 1 ? 12 : month - 1;
-            var previousYear = month == 1 ? year - 1 : year;
+            // 4. Optionally carry over bank balance from previous month
+            if (copyPreviousBalance)
+            {
+                var previousMonth = month == 1 ? 12 : month - 1;
+                var previousYear = month == 1 ? year - 1 : year;
 
-            try
-            {
-                var previousBalance = await _dataStorage.GetBankBalanceAsync(previousMonth, previousYear);
-                await _dataStorage.UpdateBankBalanceAsync(month, year, previousBalance.CurrentBalance);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Could not carry over bank balance: {ex.Message}");
-                // If previous month doesn't exist, start with 0 (which is the default)
+                try
+                {
+                    var previousBalance = await _dataStorage.GetBankBalanceAsync(previousMonth, previousYear);
+                    await _dataStorage.UpdateBankBalanceAsync(month, year, previousBalance.CurrentBalance);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Could not carry over bank balance: {ex.Message}");
+                    // If previous month doesn't exist, start with 0 (which is the default)
+                }
             }
 
             // 5. Mark month as initialized
@@ -151,15 +167,21 @@ namespace MoneyPal.Services
             await _dataStorage.DeleteMonthlyRecurringExpenseSnapshotsAsync(month, year);
             await _dataStorage.DeleteMonthlyIncomeSnapshotsAsync(month, year);
 
-            // 2. If not preserving user data, delete payment records
+            // 2. If not preserving user data, delete payment records and income records
             // Note: We don't delete Expense records as they are user-created transactions
-            // But we can reset payment records for recurring expenses
+            // But we can reset payment records for recurring expenses and income records
             if (!preserveUserData)
             {
                 var paymentRecords = await _dataStorage.GetPaymentRecordsForMonthAsync(month, year);
                 foreach (var record in paymentRecords)
                 {
                     await _dataStorage.DeletePaymentRecordAsync(record.Id);
+                }
+
+                var incomeRecords = await _dataStorage.GetIncomeRecordsForMonthAsync(month, year);
+                foreach (var record in incomeRecords)
+                {
+                    await _dataStorage.DeleteIncomeRecordAsync(record.Id);
                 }
             }
 
@@ -191,6 +213,26 @@ namespace MoneyPal.Services
         public async Task<MonthStatus?> GetMonthStatusAsync(int month, int year)
         {
             return await _dataStorage.GetMonthStatusAsync(month, year);
+        }
+
+        /// <summary>
+        /// Gets the bank balance from the previous month
+        /// </summary>
+        /// <returns>The previous month's balance, or null if it doesn't exist</returns>
+        public async Task<decimal?> GetPreviousMonthBalanceAsync(int month, int year)
+        {
+            var previousMonth = month == 1 ? 12 : month - 1;
+            var previousYear = month == 1 ? year - 1 : year;
+
+            try
+            {
+                var previousBalance = await _dataStorage.GetBankBalanceAsync(previousMonth, previousYear);
+                return previousBalance.CurrentBalance;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
