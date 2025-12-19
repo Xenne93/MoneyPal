@@ -28,18 +28,6 @@ public class DataStorageService : IDataStorageService
 
             Console.WriteLine("Initializing database...");
 
-            // Migration: Drop and recreate BankBalance table due to schema change
-            try
-            {
-                await _database.DropTableAsync<BankBalance>();
-                Console.WriteLine("Dropped BankBalance table for migration");
-            }
-            catch (Exception ex)
-            {
-                // Table might not exist yet, ignore error
-                Console.WriteLine($"Could not drop BankBalance table (may not exist): {ex.Message}");
-            }
-
             // Create tables
             try
             {
