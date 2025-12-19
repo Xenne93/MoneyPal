@@ -13,16 +13,19 @@ public partial class MonthlyOverviewPage : ContentPage
     private readonly IPaymentService _paymentService;
     private readonly IBankBalanceService _bankBalanceService;
     private readonly ILocalizationService _localization;
+    private readonly MonthInitializationService _monthInitService;
+    private readonly DataStorageService _dataStorage;
 
     private int _currentMonth;
     private int _currentYear;
+    private bool _isLoadingData = false;
     private ObservableCollection<MonthlyBudgetItem> _budgets = new();
     private ObservableCollection<MonthlyExpenseItem> _expenses = new();
     private ObservableCollection<OneTimeExpenseItem> _oneTimeExpenses = new();
 
     public MonthlyOverviewPage(IBudgetService budgetService, ITransactionService transactionService,
         IExpenseService expenseService, IPaymentService paymentService, IBankBalanceService bankBalanceService,
-        ILocalizationService localization)
+        ILocalizationService localization, MonthInitializationService monthInitService, DataStorageService dataStorage)
     {
         InitializeComponent();
         _budgetService = budgetService;
@@ -31,6 +34,8 @@ public partial class MonthlyOverviewPage : ContentPage
         _paymentService = paymentService;
         _bankBalanceService = bankBalanceService;
         _localization = localization;
+        _monthInitService = monthInitService;
+        _dataStorage = dataStorage;
 
         // Set to current month
         _currentMonth = DateTime.Now.Month;
@@ -116,27 +121,49 @@ public partial class MonthlyOverviewPage : ContentPage
     {
         try
         {
+            _isLoadingData = true;
+
             // Update month label with localized culture
             var date = new DateTime(_currentYear, _currentMonth, 1);
             var culture = new CultureInfo(_localization.CurrentLanguage);
             MonthLabel.Text = date.ToString("MMMM yyyy", culture);
 
-            // Get all active budgets
-            var budgets = await _budgetService.GetAllBudgetsAsync();
-            if (budgets == null) budgets = new List<Budget>();
-            var activeBudgets = budgets.Where(b => b.IsActive).ToList();
+            // Check if month is initialized
+            var isInitialized = await _monthInitService.IsMonthInitializedAsync(_currentMonth, _currentYear);
 
-            // Get all active recurring expenses
-            var expenses = await _expenseService.GetAllExpensesAsync();
-            if (expenses == null) expenses = new List<RecurringExpense>();
-            var activeExpenses = expenses.Where(e => e.IsActive).ToList();
+            if (!isInitialized)
+            {
+                // Show "Not Initialized" state
+                NotInitializedState.IsVisible = true;
+                RegenerateMonthSection.IsVisible = false;
+                EmptyState.IsVisible = false;
+                BudgetsSection.IsVisible = false;
+                RecurringExpensesSection.IsVisible = false;
+                OneTimeExpensesSection.IsVisible = false;
+                OneTimeExpensesCollection.IsVisible = false;
+
+                // Reset button state
+                InitializeMonthButton.IsEnabled = true;
+                InitializeMonthButton.Text = "Begin met invullen";
+                return;
+            }
+
+            // Month is initialized, hide not initialized state and show regenerate button
+            NotInitializedState.IsVisible = false;
+            RegenerateMonthSection.IsVisible = true;
+
+            // Get budget snapshots for this month
+            var budgetSnapshots = await _dataStorage.GetMonthlyBudgetSnapshotsAsync(_currentMonth, _currentYear);
+
+            // Get recurring expense snapshots for this month
+            var expenseSnapshots = await _dataStorage.GetMonthlyRecurringExpenseSnapshotsAsync(_currentMonth, _currentYear);
 
             // Get one-time expenses for this month
             var oneTimeExpenses = await _transactionService.GetOneTimeExpensesForMonthAsync(_currentMonth, _currentYear);
             if (oneTimeExpenses == null) oneTimeExpenses = new List<Expense>();
 
         // Check if we have any data
-        if (!activeBudgets.Any() && !activeExpenses.Any() && !oneTimeExpenses.Any())
+        if (!budgetSnapshots.Any() && !expenseSnapshots.Any() && !oneTimeExpenses.Any())
         {
             EmptyState.IsVisible = true;
             BudgetsSection.IsVisible = false;
@@ -157,30 +184,48 @@ public partial class MonthlyOverviewPage : ContentPage
         decimal totalRecurringExpenses = 0;
         decimal totalRecurringPaid = 0;
 
-        // Load budgets - create new list to avoid flickering
+        // Load budget snapshots - create new list to avoid flickering
         var budgetItems = new List<MonthlyBudgetItem>();
-        if (activeBudgets.Any())
+        if (budgetSnapshots.Any())
         {
             BudgetsSection.IsVisible = true;
 
-            foreach (var budget in activeBudgets.OrderBy(b => b.Name))
+            foreach (var snapshot in budgetSnapshots.OrderBy(b => b.Name))
             {
-                var spent = await _transactionService.GetTotalForBudgetAsync(budget.Id, _currentMonth, _currentYear);
+                // Get spending from actual Expense records linked to the original budget
+                var spent = await _transactionService.GetTotalForBudgetAsync(snapshot.OriginalBudgetId, _currentMonth, _currentYear);
+
+                // Try to get the actual budget for navigation purposes, fallback to creating a temporary one from snapshot
+                var actualBudget = await _budgetService.GetBudgetByIdAsync(snapshot.OriginalBudgetId);
+                if (actualBudget == null)
+                {
+                    // Create a temporary budget object from the snapshot
+                    actualBudget = new Budget
+                    {
+                        Id = snapshot.OriginalBudgetId,
+                        Name = snapshot.Name,
+                        Amount = snapshot.Amount,
+                        CategoryId = snapshot.CategoryId,
+                        Description = snapshot.Description,
+                        CountAsFixedExpense = snapshot.CountAsFixedExpense,
+                        IsActive = false // Mark as inactive since it doesn't exist in master data
+                    };
+                }
 
                 var item = new MonthlyBudgetItem
                 {
-                    Budget = budget,
-                    BudgetId = budget.Id,
-                    Name = budget.Name,
-                    BudgetAmount = budget.Amount,
+                    Budget = actualBudget,
+                    BudgetId = snapshot.OriginalBudgetId,
+                    Name = snapshot.Name,
+                    BudgetAmount = snapshot.Amount,
                     SpentAmount = spent,
-                    RemainingAmount = budget.Amount - spent,
-                    ProgressPercentage = budget.Amount > 0 ? (double)(spent / budget.Amount) : 0
+                    RemainingAmount = snapshot.Amount - spent,
+                    ProgressPercentage = snapshot.Amount > 0 ? (double)(spent / snapshot.Amount) : 0
                 };
 
                 budgetItems.Add(item);
 
-                totalBudget += budget.Amount;
+                totalBudget += snapshot.Amount;
                 totalSpent += spent;
             }
 
@@ -195,31 +240,32 @@ public partial class MonthlyOverviewPage : ContentPage
             _budgets.Clear();
         }
 
-        // Load recurring expenses - create new list to avoid flickering
+        // Load recurring expense snapshots - create new list to avoid flickering
         var expenseItems = new List<MonthlyExpenseItem>();
-        if (activeExpenses.Any())
+        if (expenseSnapshots.Any())
         {
             RecurringExpensesSection.IsVisible = true;
 
-            foreach (var expense in activeExpenses.OrderBy(e => e.DayOfMonth))
+            foreach (var snapshot in expenseSnapshots.OrderBy(e => e.DayOfMonth))
             {
-                var isPaid = await _paymentService.IsExpensePaidAsync(expense.Id, _currentMonth, _currentYear);
+                // Check payment status using the original expense ID
+                var isPaid = await _paymentService.IsExpensePaidAsync(snapshot.OriginalExpenseId, _currentMonth, _currentYear);
 
                 var item = new MonthlyExpenseItem
                 {
-                    ExpenseId = expense.Id,
-                    Name = expense.Name,
-                    Description = expense.Description ?? "",
-                    Amount = expense.Amount,
-                    DayOfMonth = expense.DayOfMonth,
+                    ExpenseId = snapshot.OriginalExpenseId,
+                    Name = snapshot.Name,
+                    Description = snapshot.Description ?? "",
+                    Amount = snapshot.Amount,
+                    DayOfMonth = snapshot.DayOfMonth,
                     IsPaid = isPaid
                 };
 
                 expenseItems.Add(item);
 
-                totalRecurringExpenses += expense.Amount;
+                totalRecurringExpenses += snapshot.Amount;
                 if (isPaid)
-                    totalRecurringPaid += expense.Amount;
+                    totalRecurringPaid += snapshot.Amount;
             }
 
             // Update collection in one go
@@ -304,6 +350,10 @@ public partial class MonthlyOverviewPage : ContentPage
 
             // Re-throw so OnAppearing can handle it
             throw;
+        }
+        finally
+        {
+            _isLoadingData = false;
         }
     }
 
@@ -397,7 +447,7 @@ public partial class MonthlyOverviewPage : ContentPage
 
         if (item != null)
         {
-            await Navigation.PushAsync(new BudgetDetailPage(_transactionService, _budgetService, item.Budget, _currentMonth, _currentYear));
+            await Navigation.PushAsync(new BudgetDetailPage(_transactionService, _budgetService, _bankBalanceService, _localization, item.Budget, _currentMonth, _currentYear));
         }
     }
 
@@ -405,13 +455,49 @@ public partial class MonthlyOverviewPage : ContentPage
     {
         if (sender is CheckBox checkBox && checkBox.BindingContext is MonthlyExpenseItem item)
         {
+            // Don't show popup if we're just loading data
+            if (_isLoadingData)
+            {
+                return;
+            }
+
             if (e.Value)
             {
+                // Ask user if they want to deduct from bank balance
+                bool deductFromBalance = await DisplayAlert(
+                    _localization.GetString("MonthlyOverview.DeductFromBalance"),
+                    $"{_localization.GetString("MonthlyOverview.DeductFromBalanceQuestion")} (€ {item.Amount:N2})?",
+                    _localization.GetString("Common.Yes"),
+                    _localization.GetString("Common.No"));
+
                 await _paymentService.MarkAsPaidAsync(item.ExpenseId, _currentMonth, _currentYear);
+
+                // If yes, deduct from bank balance
+                if (deductFromBalance)
+                {
+                    var currentBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
+                    var newBalance = currentBalance.CurrentBalance - item.Amount;
+                    await _bankBalanceService.UpdateBankBalanceAsync(_currentMonth, _currentYear, newBalance);
+                }
             }
             else
             {
+                // Ask user if they want to add back to bank balance
+                bool addBackToBalance = await DisplayAlert(
+                    _localization.GetString("MonthlyOverview.AddBackToBalance"),
+                    $"{_localization.GetString("MonthlyOverview.AddBackToBalanceQuestion")} (€ {item.Amount:N2})?",
+                    _localization.GetString("Common.Yes"),
+                    _localization.GetString("Common.No"));
+
                 await _paymentService.MarkAsUnpaidAsync(item.ExpenseId, _currentMonth, _currentYear);
+
+                // If yes, add back to bank balance
+                if (addBackToBalance)
+                {
+                    var currentBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
+                    var newBalance = currentBalance.CurrentBalance + item.Amount;
+                    await _bankBalanceService.UpdateBankBalanceAsync(_currentMonth, _currentYear, newBalance);
+                }
             }
 
             // Update the item's IsPaid property
@@ -426,13 +512,49 @@ public partial class MonthlyOverviewPage : ContentPage
     {
         if (sender is CheckBox checkBox && checkBox.BindingContext is OneTimeExpenseItem item)
         {
+            // Don't show popup if we're just loading data
+            if (_isLoadingData)
+            {
+                return;
+            }
+
             if (e.Value)
             {
+                // Ask user if they want to deduct from bank balance
+                bool deductFromBalance = await DisplayAlert(
+                    _localization.GetString("MonthlyOverview.DeductFromBalance"),
+                    $"{_localization.GetString("MonthlyOverview.DeductFromBalanceQuestion")} (€ {item.Amount:N2})?",
+                    _localization.GetString("Common.Yes"),
+                    _localization.GetString("Common.No"));
+
                 await _paymentService.MarkAsPaidAsync(item.ExpenseId, _currentMonth, _currentYear);
+
+                // If yes, deduct from bank balance
+                if (deductFromBalance)
+                {
+                    var currentBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
+                    var newBalance = currentBalance.CurrentBalance - item.Amount;
+                    await _bankBalanceService.UpdateBankBalanceAsync(_currentMonth, _currentYear, newBalance);
+                }
             }
             else
             {
+                // Ask user if they want to add back to bank balance
+                bool addBackToBalance = await DisplayAlert(
+                    _localization.GetString("MonthlyOverview.AddBackToBalance"),
+                    $"{_localization.GetString("MonthlyOverview.AddBackToBalanceQuestion")} (€ {item.Amount:N2})?",
+                    _localization.GetString("Common.Yes"),
+                    _localization.GetString("Common.No"));
+
                 await _paymentService.MarkAsUnpaidAsync(item.ExpenseId, _currentMonth, _currentYear);
+
+                // If yes, add back to bank balance
+                if (addBackToBalance)
+                {
+                    var currentBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
+                    var newBalance = currentBalance.CurrentBalance + item.Amount;
+                    await _bankBalanceService.UpdateBankBalanceAsync(_currentMonth, _currentYear, newBalance);
+                }
             }
 
             // Update the item's IsPaid property
@@ -554,6 +676,116 @@ public partial class MonthlyOverviewPage : ContentPage
             {
                 await _transactionService.DeleteExpenseAsync(item.ExpenseId);
                 await LoadData();
+            }
+        }
+    }
+
+    private async void OnInitializeMonthClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var date = new DateTime(_currentYear, _currentMonth, 1);
+            var culture = new CultureInfo(_localization.CurrentLanguage);
+            var monthName = date.ToString("MMMM yyyy", culture);
+
+            bool confirm = await DisplayAlert(
+                "Maand initialiseren",
+                $"Wil je {monthName} initialiseren met je huidige budgetten, vaste lasten en inkomsten?",
+                "Ja",
+                "Nee");
+
+            if (confirm)
+            {
+                // Show loading indicator
+                InitializeMonthButton.IsEnabled = false;
+                InitializeMonthButton.Text = "Bezig met initialiseren...";
+
+                await _monthInitService.InitializeMonthAsync(_currentMonth, _currentYear);
+
+                // Reload data
+                await LoadData();
+
+                await DisplayAlert(
+                    "Succes",
+                    $"{monthName} is succesvol geïnitialiseerd!",
+                    "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing month: {ex}");
+            await DisplayAlert(
+                "Fout",
+                $"Er is een fout opgetreden bij het initialiseren van de maand: {ex.Message}",
+                "OK");
+
+            // Re-enable button
+            InitializeMonthButton.IsEnabled = true;
+            InitializeMonthButton.Text = "Begin met invullen";
+        }
+    }
+
+    private async void OnRegenerateMonthClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var date = new DateTime(_currentYear, _currentMonth, 1);
+            var culture = new CultureInfo(_localization.CurrentLanguage);
+            var monthName = date.ToString("MMMM yyyy", culture);
+
+            // Ask user whether to preserve data or reset
+            var action = await DisplayActionSheet(
+                $"Opnieuw genereren: {monthName}",
+                "Annuleren",
+                null,
+                "Behoud handmatige wijzigingen",
+                "Reset volledig (verwijder alles)");
+
+            if (action == "Annuleren" || action == null)
+                return;
+
+            bool preserveUserData = action == "Behoud handmatige wijzigingen";
+
+            bool confirm = await DisplayAlert(
+                "Bevestiging",
+                preserveUserData
+                    ? $"De budgetten en vaste lasten van {monthName} worden bijgewerkt naar de huidige versies. Je handmatige uitgaven en betalingsstatussen blijven behouden."
+                    : $"WAARSCHUWING: Alle data van {monthName} wordt verwijderd en opnieuw gegenereerd. Dit kan niet ongedaan gemaakt worden!",
+                "Doorgaan",
+                "Annuleren");
+
+            if (confirm)
+            {
+                // Show loading indicator
+                RegenerateMonthButton.IsEnabled = false;
+                RegenerateMonthButton.Text = "Bezig...";
+
+                await _monthInitService.RegenerateMonthAsync(_currentMonth, _currentYear, preserveUserData);
+
+                // Reload data
+                await LoadData();
+
+                await DisplayAlert(
+                    "Succes",
+                    $"{monthName} is succesvol opnieuw gegenereerd!",
+                    "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error regenerating month: {ex}");
+            await DisplayAlert(
+                "Fout",
+                $"Er is een fout opgetreden bij het opnieuw genereren van de maand: {ex.Message}",
+                "OK");
+        }
+        finally
+        {
+            // Re-enable button
+            if (RegenerateMonthButton != null)
+            {
+                RegenerateMonthButton.IsEnabled = true;
+                RegenerateMonthButton.Text = "Opnieuw genereren";
             }
         }
     }

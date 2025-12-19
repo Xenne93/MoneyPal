@@ -99,7 +99,11 @@
     "UnpaidCount": "Open Items",
     "NoExpenses": "No recurring expenses for this month",
     "OverBudget": "Over budget",
-    "Remaining": "remaining"
+    "Remaining": "remaining",
+    "DeductFromBalance": "Deduct from bank balance",
+    "DeductFromBalanceQuestion": "Do you want to deduct this amount from your current bank balance",
+    "AddBackToBalance": "Add back to bank balance",
+    "AddBackToBalanceQuestion": "Do you want to add this amount back to your current bank balance"
   },
   "Budgets": {
     "Title": "Budgets",
@@ -137,7 +141,16 @@
     "About": "About",
     "Version": "Version",
     "Appearance": "Appearance",
-    "General": "General"
+    "General": "General",
+    "DangerZone": "Danger Zone",
+    "ClearDatabase": "Clear Database",
+    "ClearDatabaseDescription": "Delete all data permanently",
+    "ClearDatabaseWarning": "Are you sure you want to delete ALL data? This will remove all your budgets, expenses, income, and monthly overviews. This action CANNOT be undone!",
+    "AreYouSure": "Are you sure?",
+    "ClearDatabaseFinalWarning": "This is your last chance! All data will be permanently deleted. There is no way to undo this.",
+    "DeleteEverything": "Delete everything",
+    "DatabaseCleared": "Database successfully cleared. All your data has been deleted.",
+    "ClearDatabaseError": "Error clearing database"
   },
   "Common": {
     "Currency": "€",

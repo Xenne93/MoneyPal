@@ -7,16 +7,22 @@ public partial class TransactionFormPage : ContentPage
 {
     private readonly ITransactionService _transactionService;
     private readonly IBudgetService _budgetService;
+    private readonly IBankBalanceService _bankBalanceService;
+    private readonly ILocalizationService _localization;
     private readonly Budget _budget;
     private readonly Expense? _editingExpense;
     private readonly int _month;
     private readonly int _year;
 
-    public TransactionFormPage(ITransactionService transactionService, IBudgetService budgetService, Budget budget, int month, int year, Expense? editingExpense = null)
+    public TransactionFormPage(ITransactionService transactionService, IBudgetService budgetService,
+        IBankBalanceService bankBalanceService, ILocalizationService localization,
+        Budget budget, int month, int year, Expense? editingExpense = null)
     {
         InitializeComponent();
         _transactionService = transactionService;
         _budgetService = budgetService;
+        _bankBalanceService = bankBalanceService;
+        _localization = localization;
         _budget = budget;
         _month = month;
         _year = year;
@@ -74,6 +80,21 @@ public partial class TransactionFormPage : ContentPage
         if (_editingExpense == null)
         {
             await _transactionService.AddExpenseAsync(expense);
+
+            // Ask user if they want to deduct from bank balance
+            bool deductFromBalance = await DisplayAlert(
+                _localization.GetString("MonthlyOverview.DeductFromBalance"),
+                $"{_localization.GetString("MonthlyOverview.DeductFromBalanceQuestion")} (€ {expense.Amount:N2})?",
+                _localization.GetString("Common.Yes"),
+                _localization.GetString("Common.No"));
+
+            // If yes, deduct from bank balance
+            if (deductFromBalance)
+            {
+                var currentBalance = await _bankBalanceService.GetBankBalanceAsync(_month, _year);
+                var newBalance = currentBalance.CurrentBalance - expense.Amount;
+                await _bankBalanceService.UpdateBankBalanceAsync(_month, _year, newBalance);
+            }
         }
         else
         {

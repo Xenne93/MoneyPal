@@ -99,7 +99,11 @@
     "UnpaidCount": "Offene Ausgaben",
     "NoExpenses": "Keine fixen Ausgaben für diesen Monat",
     "OverBudget": "Über dem Budget",
-    "Remaining": "verbleibend"
+    "Remaining": "verbleibend",
+    "DeductFromBalance": "Vom Kontostand abziehen",
+    "DeductFromBalanceQuestion": "Möchtest du diesen Betrag auch von deinem aktuellen Kontostand abziehen",
+    "AddBackToBalance": "Zum Kontostand hinzufügen",
+    "AddBackToBalanceQuestion": "Möchtest du diesen Betrag wieder zu deinem aktuellen Kontostand hinzufügen"
   },
   "Budgets": {
     "Title": "Budgets",
@@ -137,7 +141,16 @@
     "About": "Über",
     "Version": "Version",
     "Appearance": "Darstellung",
-    "General": "Allgemein"
+    "General": "Allgemein",
+    "DangerZone": "Gefahrenzone",
+    "ClearDatabase": "Datenbank löschen",
+    "ClearDatabaseDescription": "Alle Daten dauerhaft löschen",
+    "ClearDatabaseWarning": "Bist du sicher, dass du ALLE Daten löschen möchtest? Dies entfernt alle deine Budgets, Ausgaben, Einnahmen und Monatsübersichten. Diese Aktion kann NICHT rückgängig gemacht werden!",
+    "AreYouSure": "Bist du sicher?",
+    "ClearDatabaseFinalWarning": "Dies ist deine letzte Chance! Alle Daten werden dauerhaft gelöscht. Es gibt keine Möglichkeit, dies rückgängig zu machen.",
+    "DeleteEverything": "Alles löschen",
+    "DatabaseCleared": "Datenbank erfolgreich gelöscht. Alle deine Daten wurden entfernt.",
+    "ClearDatabaseError": "Fehler beim Löschen der Datenbank"
   },
   "Common": {
     "Currency": "€",

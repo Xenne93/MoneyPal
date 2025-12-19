@@ -8,16 +8,22 @@ public partial class BudgetDetailPage : ContentPage
 {
     private readonly ITransactionService _transactionService;
     private readonly IBudgetService _budgetService;
+    private readonly IBankBalanceService _bankBalanceService;
+    private readonly ILocalizationService _localization;
     private readonly Budget _budget;
     private readonly int _month;
     private readonly int _year;
     private List<Expense> _expenses = new();
 
-    public BudgetDetailPage(ITransactionService transactionService, IBudgetService budgetService, Budget budget, int month, int year)
+    public BudgetDetailPage(ITransactionService transactionService, IBudgetService budgetService,
+        IBankBalanceService bankBalanceService, ILocalizationService localization,
+        Budget budget, int month, int year)
     {
         InitializeComponent();
         _transactionService = transactionService;
         _budgetService = budgetService;
+        _bankBalanceService = bankBalanceService;
+        _localization = localization;
         _budget = budget;
         _month = month;
         _year = year;
@@ -60,7 +66,7 @@ public partial class BudgetDetailPage : ContentPage
 
     private async void OnAddExpenseClicked(object sender, EventArgs e)
     {
-        await Navigation.PushModalAsync(new TransactionFormPage(_transactionService, _budgetService, _budget, _month, _year));
+        await Navigation.PushModalAsync(new TransactionFormPage(_transactionService, _budgetService, _bankBalanceService, _localization, _budget, _month, _year));
         // Reload data when modal is closed
         await LoadData();
     }
@@ -69,7 +75,7 @@ public partial class BudgetDetailPage : ContentPage
     {
         if (sender is Button button && button.CommandParameter is Expense expense)
         {
-            await Navigation.PushModalAsync(new TransactionFormPage(_transactionService, _budgetService, _budget, _month, _year, expense));
+            await Navigation.PushModalAsync(new TransactionFormPage(_transactionService, _budgetService, _bankBalanceService, _localization, _budget, _month, _year, expense));
             // Reload data when modal is closed
             await LoadData();
         }

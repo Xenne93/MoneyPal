@@ -264,6 +264,76 @@
                     </Border>
                 </Grid>
 
+                <!-- Regenerate Month Button (only visible when month is initialized) -->
+                <Border x:Name="RegenerateMonthSection" IsVisible="False"
+                        BackgroundColor="{StaticResource Warning}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="14,10"
+                        Margin="0,16,0,0"
+                        Opacity="0.9">
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                        <Label Text="⚙️" FontSize="18" VerticalOptions="Center" />
+                        <Button x:Name="RegenerateMonthButton"
+                                Text="Opnieuw genereren"
+                                TextColor="White"
+                                BackgroundColor="Transparent"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                Padding="0"
+                                Clicked="OnRegenerateMonthClicked"
+                                VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Month Not Initialized State -->
+                <VerticalStackLayout x:Name="NotInitializedState" IsVisible="False" Spacing="24" Padding="30" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,40,0,0">
+                    <Border BackgroundColor="{StaticResource Surface}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 20"
+                            Padding="30,40">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.2" Radius="15" Offset="0,5" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="20" HorizontalOptions="Center">
+                            <Label Text="📅" FontSize="72" HorizontalOptions="Center" />
+                            <Label x:Name="MonthNotInitializedLabel"
+                                   Text="Deze maand is nog niet geïnitialiseerd"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center" />
+                            <Label x:Name="MonthNotInitializedDescriptionLabel"
+                                   Text="Start met invullen om deze maand te genereren met je huidige budgetten, vaste lasten en inkomsten"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="14"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"
+                                   MaximumWidthRequest="350" />
+
+                            <Border BackgroundColor="{StaticResource Primary}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 14"
+                                    Padding="0"
+                                    Margin="0,10,0,0"
+                                    HorizontalOptions="Center">
+                                <Border.Shadow>
+                                    <Shadow Brush="{StaticResource Primary}" Opacity="0.4" Radius="12" Offset="0,4" />
+                                </Border.Shadow>
+                                <Button x:Name="InitializeMonthButton"
+                                        Text="Begin met invullen"
+                                        TextColor="White"
+                                        BackgroundColor="Transparent"
+                                        FontSize="16"
+                                        FontAttributes="Bold"
+                                        Padding="30,14"
+                                        Clicked="OnInitializeMonthClicked" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
                 <!-- Empty State -->
                 <VerticalStackLayout x:Name="EmptyState" IsVisible="False" Spacing="20" Padding="40" HorizontalOptions="Center" VerticalOptions="Center">
                     <Label Text="💰" FontSize="64" HorizontalOptions="Center" />

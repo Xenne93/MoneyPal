@@ -14,7 +14,8 @@ public static class MauiProgram
             .ConfigureFonts(fonts => { fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular"); });
 
         // Register services
-        builder.Services.AddSingleton<IDataStorageService, DataStorageService>();
+        builder.Services.AddSingleton<DataStorageService>();
+        builder.Services.AddSingleton<IDataStorageService>(sp => sp.GetRequiredService<DataStorageService>());
         builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
         builder.Services.AddSingleton<IExpenseService, ExpenseService>();
         builder.Services.AddSingleton<IPaymentService, PaymentService>();
@@ -22,6 +23,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ITransactionService, TransactionService>();
         builder.Services.AddSingleton<IIncomeService, IncomeService>();
         builder.Services.AddSingleton<IBankBalanceService, BankBalanceService>();
+        builder.Services.AddSingleton<MonthInitializationService>();
 
         // Register App and AppShell
         builder.Services.AddSingleton<App>();

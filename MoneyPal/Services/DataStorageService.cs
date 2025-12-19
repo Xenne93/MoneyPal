@@ -52,6 +52,12 @@ public class DataStorageService : IDataStorageService
                 await _database.CreateTableAsync<Income>();
                 await _database.CreateTableAsync<BankBalance>();
 
+                // Monthly snapshot tables
+                await _database.CreateTableAsync<MonthStatus>();
+                await _database.CreateTableAsync<MonthlyBudgetSnapshot>();
+                await _database.CreateTableAsync<MonthlyRecurringExpenseSnapshot>();
+                await _database.CreateTableAsync<MonthlyIncomeSnapshot>();
+
                 Console.WriteLine("Database tables created successfully");
                 _isInitialized = true;
             }
@@ -544,10 +550,168 @@ public class DataStorageService : IDataStorageService
     public async Task<BankBalance> UpdateBankBalanceAsync(int month, int year, decimal newBalance)
     {
         await InitializeAsync();
-        var balance = await GetBankBalanceAsync(month, year);
-        balance.CurrentBalance = newBalance;
-        balance.LastUpdated = DateTime.UtcNow;
-        await _database.UpdateAsync(balance);
-        return balance;
+
+        // Try to get existing balance from database
+        var existingBalance = await _database.Table<BankBalance>()
+            .Where(b => b.Month == month && b.Year == year)
+            .FirstOrDefaultAsync();
+
+        if (existingBalance != null)
+        {
+            // Update existing record
+            existingBalance.CurrentBalance = newBalance;
+            existingBalance.LastUpdated = DateTime.UtcNow;
+            await _database.UpdateAsync(existingBalance);
+            return existingBalance;
+        }
+        else
+        {
+            // Insert new record
+            var newBankBalance = new BankBalance
+            {
+                Id = Guid.NewGuid(),
+                Month = month,
+                Year = year,
+                CurrentBalance = newBalance,
+                LastUpdated = DateTime.UtcNow
+            };
+            await _database.InsertAsync(newBankBalance);
+            return newBankBalance;
+        }
+    }
+
+    // Month Status methods
+    public async Task<MonthStatus?> GetMonthStatusAsync(int month, int year)
+    {
+        await InitializeAsync();
+        return await _database.Table<MonthStatus>()
+            .Where(m => m.Month == month && m.Year == year)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<MonthStatus> UpsertMonthStatusAsync(MonthStatus status)
+    {
+        await InitializeAsync();
+
+        var existing = await GetMonthStatusAsync(status.Month, status.Year);
+        if (existing != null)
+        {
+            status.Id = existing.Id;
+            status.CreatedAt = existing.CreatedAt;
+            await _database.UpdateAsync(status);
+        }
+        else
+        {
+            status.Id = Guid.NewGuid();
+            status.CreatedAt = DateTime.UtcNow;
+            await _database.InsertAsync(status);
+        }
+
+        return status;
+    }
+
+    // Monthly Budget Snapshot methods
+    public async Task<List<MonthlyBudgetSnapshot>> GetMonthlyBudgetSnapshotsAsync(int month, int year)
+    {
+        await InitializeAsync();
+        return await _database.Table<MonthlyBudgetSnapshot>()
+            .Where(b => b.Month == month && b.Year == year)
+            .ToListAsync();
+    }
+
+    public async Task<MonthlyBudgetSnapshot> InsertMonthlyBudgetSnapshotAsync(MonthlyBudgetSnapshot snapshot)
+    {
+        await InitializeAsync();
+        await _database.InsertAsync(snapshot);
+        return snapshot;
+    }
+
+    public async Task<int> DeleteMonthlyBudgetSnapshotsAsync(int month, int year)
+    {
+        await InitializeAsync();
+        var snapshots = await GetMonthlyBudgetSnapshotsAsync(month, year);
+        foreach (var snapshot in snapshots)
+        {
+            await _database.DeleteAsync<MonthlyBudgetSnapshot>(snapshot.Id);
+        }
+        return snapshots.Count;
+    }
+
+    // Monthly Recurring Expense Snapshot methods
+    public async Task<List<MonthlyRecurringExpenseSnapshot>> GetMonthlyRecurringExpenseSnapshotsAsync(int month, int year)
+    {
+        await InitializeAsync();
+        return await _database.Table<MonthlyRecurringExpenseSnapshot>()
+            .Where(e => e.Month == month && e.Year == year)
+            .ToListAsync();
+    }
+
+    public async Task<MonthlyRecurringExpenseSnapshot> InsertMonthlyRecurringExpenseSnapshotAsync(MonthlyRecurringExpenseSnapshot snapshot)
+    {
+        await InitializeAsync();
+        await _database.InsertAsync(snapshot);
+        return snapshot;
+    }
+
+    public async Task<int> DeleteMonthlyRecurringExpenseSnapshotsAsync(int month, int year)
+    {
+        await InitializeAsync();
+        var snapshots = await GetMonthlyRecurringExpenseSnapshotsAsync(month, year);
+        foreach (var snapshot in snapshots)
+        {
+            await _database.DeleteAsync<MonthlyRecurringExpenseSnapshot>(snapshot.Id);
+        }
+        return snapshots.Count;
+    }
+
+    // Monthly Income Snapshot methods
+    public async Task<List<MonthlyIncomeSnapshot>> GetMonthlyIncomeSnapshotsAsync(int month, int year)
+    {
+        await InitializeAsync();
+        return await _database.Table<MonthlyIncomeSnapshot>()
+            .Where(i => i.Month == month && i.Year == year)
+            .ToListAsync();
+    }
+
+    public async Task<MonthlyIncomeSnapshot> InsertMonthlyIncomeSnapshotAsync(MonthlyIncomeSnapshot snapshot)
+    {
+        await InitializeAsync();
+        await _database.InsertAsync(snapshot);
+        return snapshot;
+    }
+
+    public async Task<int> DeleteMonthlyIncomeSnapshotsAsync(int month, int year)
+    {
+        await InitializeAsync();
+        var snapshots = await GetMonthlyIncomeSnapshotsAsync(month, year);
+        foreach (var snapshot in snapshots)
+        {
+            await _database.DeleteAsync<MonthlyIncomeSnapshot>(snapshot.Id);
+        }
+        return snapshots.Count;
+    }
+
+    // Clear entire database
+    public async Task ClearAllDataAsync()
+    {
+        await InitializeAsync();
+
+        // Delete all data from all tables
+        await _database.DeleteAllAsync<Expense>();
+        await _database.DeleteAllAsync<PaymentRecord>();
+        await _database.DeleteAllAsync<BudgetSpending>();
+        await _database.DeleteAllAsync<Budget>();
+        await _database.DeleteAllAsync<RecurringExpense>();
+        await _database.DeleteAllAsync<Income>();
+        await _database.DeleteAllAsync<BankBalance>();
+        await _database.DeleteAllAsync<Category>();
+
+        // Delete all snapshot data
+        await _database.DeleteAllAsync<MonthStatus>();
+        await _database.DeleteAllAsync<MonthlyBudgetSnapshot>();
+        await _database.DeleteAllAsync<MonthlyRecurringExpenseSnapshot>();
+        await _database.DeleteAllAsync<MonthlyIncomeSnapshot>();
+
+        Console.WriteLine("All database tables cleared successfully");
     }
 }

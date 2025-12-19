@@ -99,7 +99,11 @@
     "UnpaidCount": "Open Lasten",
     "NoExpenses": "Geen vaste lasten voor deze maand",
     "OverBudget": "Over budget",
-    "Remaining": "over"
+    "Remaining": "over",
+    "DeductFromBalance": "Aftrekken van banksaldo",
+    "DeductFromBalanceQuestion": "Wil je dit bedrag ook aftrekken van je huidige banksaldo",
+    "AddBackToBalance": "Toevoegen aan banksaldo",
+    "AddBackToBalanceQuestion": "Wil je dit bedrag weer toevoegen aan je huidige banksaldo"
   },
   "Budgets": {
     "Title": "Budgetten",
@@ -137,7 +141,16 @@
     "About": "Over",
     "Version": "Versie",
     "Appearance": "Weergave",
-    "General": "Algemeen"
+    "General": "Algemeen",
+    "DangerZone": "Gevarenzone",
+    "ClearDatabase": "Database wissen",
+    "ClearDatabaseDescription": "Verwijder alle data permanent",
+    "ClearDatabaseWarning": "Weet je zeker dat je ALLE data wilt verwijderen? Dit verwijdert al je budgetten, uitgaven, inkomsten en maandoverzichten. Deze actie kan NIET ongedaan gemaakt worden!",
+    "AreYouSure": "Weet je het zeker?",
+    "ClearDatabaseFinalWarning": "Dit is je laatste kans! Alle data wordt permanent verwijderd. Er is geen manier om dit ongedaan te maken.",
+    "DeleteEverything": "Verwijder alles",
+    "DatabaseCleared": "Database succesvol gewist. Al je data is verwijderd.",
+    "ClearDatabaseError": "Fout bij het wissen van de database"
   },
   "Common": {
     "Currency": "€",
