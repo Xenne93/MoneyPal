@@ -15,6 +15,25 @@ public partial class RecurringExpensesPage : ContentPage
         InitializeComponent();
         _expenseService = expenseService;
         _localization = localization;
+
+        // Subscribe to language changes
+        _localization.LanguageChanged += OnLanguageChanged;
+
+        // Update localized texts
+        UpdateLocalizedTexts();
+    }
+
+    private void UpdateLocalizedTexts()
+    {
+        Title = _localization.GetString("Expenses.Title");
+        NoExpensesLabel.Text = _localization.GetString("Expenses.NoExpenses");
+        AddFirstExpenseLabel.Text = _localization.GetString("Expenses.AddFirstExpense");
+        AddExpenseButton.Text = _localization.GetString("Expenses.AddButton");
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        UpdateLocalizedTexts();
     }
 
     protected override async void OnAppearing()

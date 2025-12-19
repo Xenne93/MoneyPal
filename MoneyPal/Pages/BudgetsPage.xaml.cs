@@ -14,6 +14,28 @@ public partial class BudgetsPage : ContentPage
         InitializeComponent();
         _budgetService = budgetService;
         _localization = localization;
+
+        // Subscribe to language changes
+        _localization.LanguageChanged += OnLanguageChanged;
+
+        // Update localized texts
+        UpdateLocalizedTexts();
+    }
+
+    private void UpdateLocalizedTexts()
+    {
+        Title = _localization.GetString("Budgets.Title");
+        TotalHeaderLabel.Text = _localization.GetString("Budgets.Total");
+        FixedHeaderLabel.Text = _localization.GetString("Budgets.Fixed");
+        FlexibleHeaderLabel.Text = _localization.GetString("Budgets.Flexible");
+        NoBudgetsLabel.Text = _localization.GetString("Budgets.NoBudgets");
+        AddFirstBudgetLabel.Text = _localization.GetString("Budgets.AddFirstBudget");
+        AddBudgetButton.Text = _localization.GetString("Budgets.AddButton");
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        UpdateLocalizedTexts();
     }
 
     protected override async void OnAppearing()
@@ -67,10 +89,10 @@ public partial class BudgetsPage : ContentPage
         if (sender is Button button && button.CommandParameter is Budget budget)
         {
             bool confirm = await DisplayAlert(
-                "Verwijderen",
-                $"Weet je zeker dat je '{budget.Name}' wilt verwijderen?",
-                "Ja",
-                "Nee");
+                _localization.GetString("Common.Delete"),
+                string.Format(_localization.GetString("Budgets.DeleteConfirmMessage"), budget.Name),
+                _localization.GetString("Common.Yes"),
+                _localization.GetString("Common.No"));
 
             if (confirm)
             {

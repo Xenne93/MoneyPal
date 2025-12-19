@@ -34,7 +34,7 @@
                     <!-- Total Budget -->
                     <Frame Grid.Column="0" Style="{StaticResource CardFrame}" Margin="0" Padding="12">
                         <VerticalStackLayout Spacing="5">
-                            <Label Text="Totaal" TextColor="{StaticResource TextSecondary}" FontSize="12" />
+                            <Label x:Name="TotalHeaderLabel" Text="Totaal" TextColor="{StaticResource TextSecondary}" FontSize="12" />
                             <Label x:Name="TotalBudgetLabel" Text="€ 0" TextColor="{StaticResource Primary}" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Frame>
@@ -42,7 +42,7 @@
                     <!-- Fixed Expenses -->
                     <Frame Grid.Column="1" Style="{StaticResource CardFrame}" Margin="0" Padding="12">
                         <VerticalStackLayout Spacing="5">
-                            <Label Text="Vast" TextColor="{StaticResource TextSecondary}" FontSize="12" />
+                            <Label x:Name="FixedHeaderLabel" Text="Vast" TextColor="{StaticResource TextSecondary}" FontSize="12" />
                             <Label x:Name="FixedBudgetLabel" Text="€ 0" TextColor="{StaticResource Warning}" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Frame>
@@ -50,7 +50,7 @@
                     <!-- Flexible Budget -->
                     <Frame Grid.Column="2" Style="{StaticResource CardFrame}" Margin="0" Padding="12">
                         <VerticalStackLayout Spacing="5">
-                            <Label Text="Flexibel" TextColor="{StaticResource TextSecondary}" FontSize="12" />
+                            <Label x:Name="FlexibleHeaderLabel" Text="Flexibel" TextColor="{StaticResource TextSecondary}" FontSize="12" />
                             <Label x:Name="FlexibleBudgetLabel" Text="€ 0" TextColor="{StaticResource Success}" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Frame>
@@ -59,16 +59,19 @@
                 <!-- Empty State -->
                 <VerticalStackLayout x:Name="EmptyState" IsVisible="False" Spacing="20" Padding="40" HorizontalOptions="Center" VerticalOptions="Center">
                     <Label Text="💰" FontSize="64" HorizontalOptions="Center" />
-                    <Label Text="Geen budgetten"
+                    <Label x:Name="NoBudgetsLabel"
+                           Text="Geen budgetten"
                            TextColor="{StaticResource TextPrimary}"
                            FontSize="20"
                            FontAttributes="Bold"
                            HorizontalOptions="Center" />
-                    <Label Text="Maak je eerste budget aan om je uitgaven te volgen"
+                    <Label x:Name="AddFirstBudgetLabel"
+                           Text="Maak je eerste budget aan om je uitgaven te volgen"
                            TextColor="{StaticResource TextSecondary}"
                            FontSize="14"
                            HorizontalOptions="Center" />
-                    <Button Text="➕ Budget toevoegen"
+                    <Button x:Name="AddBudgetButton"
+                            Text="➕ Budget toevoegen"
                             Style="{StaticResource PrimaryButton}"
                             Clicked="OnAddBudgetClicked" />
                 </VerticalStackLayout>

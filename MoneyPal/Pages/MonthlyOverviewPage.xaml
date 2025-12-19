@@ -127,7 +127,8 @@
                             <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2" />
                         </Border.Shadow>
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Totale lasten"
+                            <Label x:Name="TotalExpensesHeaderLabel"
+                                   Text="Totale lasten"
                                    TextColor="{StaticResource TextSecondary}"
                                    FontSize="12"
                                    Opacity="0.8" />
@@ -149,7 +150,8 @@
                             <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2" />
                         </Border.Shadow>
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Uitgegeven"
+                            <Label x:Name="SpentHeaderLabel"
+                                   Text="Uitgegeven"
                                    TextColor="{StaticResource TextSecondary}"
                                    FontSize="12"
                                    Opacity="0.8" />
@@ -171,7 +173,8 @@
                             <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2" />
                         </Border.Shadow>
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Te betalen"
+                            <Label x:Name="ToPayHeaderLabel"
+                                   Text="Te betalen"
                                    TextColor="{StaticResource TextSecondary}"
                                    FontSize="12"
                                    Opacity="0.8" />
@@ -194,7 +197,8 @@
                         </Border.Shadow>
                         <Grid RowDefinitions="Auto,Auto">
                             <HorizontalStackLayout Grid.Row="0" Spacing="6">
-                                <Label Text="Banksaldo"
+                                <Label x:Name="BankBalanceHeaderLabel"
+                                       Text="Banksaldo"
                                        TextColor="{StaticResource TextSecondary}"
                                        FontSize="12"
                                        Opacity="0.8"
@@ -237,11 +241,13 @@
                         </Border.Shadow>
                         <Grid ColumnDefinitions="*,Auto">
                             <VerticalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
-                                <Label Text="Resterend na betalingen"
+                                <Label x:Name="RemainingAfterPaymentsHeaderLabel"
+                                       Text="Resterend na betalingen"
                                        TextColor="White"
                                        FontSize="13"
                                        Opacity="0.9" />
-                                <Label Text="Banksaldo - Te betalen"
+                                <Label x:Name="BankBalanceMinusToPayLabel"
+                                       Text="Banksaldo - Te betalen"
                                        TextColor="White"
                                        FontSize="11"
                                        Opacity="0.7" />
@@ -261,12 +267,14 @@
                 <!-- Empty State -->
                 <VerticalStackLayout x:Name="EmptyState" IsVisible="False" Spacing="20" Padding="40" HorizontalOptions="Center" VerticalOptions="Center">
                     <Label Text="💰" FontSize="64" HorizontalOptions="Center" />
-                    <Label Text="Geen data"
+                    <Label x:Name="NoDataLabel"
+                           Text="Geen data"
                            TextColor="{StaticResource TextPrimary}"
                            FontSize="20"
                            FontAttributes="Bold"
                            HorizontalOptions="Center" />
-                    <Label Text="Maak budgetten en uitgaven aan om je financiën te tracken"
+                    <Label x:Name="CreateBudgetsAndExpensesLabel"
+                           Text="Maak budgetten en uitgaven aan om je financiën te tracken"
                            TextColor="{StaticResource TextSecondary}"
                            FontSize="14"
                            HorizontalOptions="Center"
@@ -279,7 +287,8 @@
                         <Label Text="💰"
                                FontSize="24"
                                VerticalOptions="Center" />
-                        <Label Text="Budgetten"
+                        <Label x:Name="BudgetsSectionHeaderLabel"
+                               Text="Budgetten"
                                TextColor="{StaticResource TextPrimary}"
                                FontSize="22"
                                FontAttributes="Bold"
@@ -386,7 +395,8 @@
                         <Label Text="💳"
                                FontSize="24"
                                VerticalOptions="Center" />
-                        <Label Text="Terugkerende Uitgaven"
+                        <Label x:Name="RecurringExpensesSectionHeaderLabel"
+                               Text="Terugkerende Uitgaven"
                                TextColor="{StaticResource TextPrimary}"
                                FontSize="22"
                                FontAttributes="Bold"
@@ -491,7 +501,8 @@
                             <Label Text="🛒"
                                    FontSize="24"
                                    VerticalOptions="Center" />
-                            <Label Text="Eenmalige Uitgaven"
+                            <Label x:Name="OneTimeExpensesSectionHeaderLabel"
+                                   Text="Eenmalige Uitgaven"
                                    TextColor="{StaticResource TextPrimary}"
                                    FontSize="22"
                                    FontAttributes="Bold"

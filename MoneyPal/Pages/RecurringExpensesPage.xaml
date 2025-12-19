@@ -41,7 +41,7 @@
                            TextColor="{StaticResource TextSecondary}"
                            FontSize="14"
                            HorizontalOptions="Center" />
-                    <Button Text="➕ Uitgave toevoegen"
+                    <Button x:Name="AddExpenseButton" Text="➕ Uitgave toevoegen"
                             Style="{StaticResource PrimaryButton}"
                             Clicked="OnAddExpenseClicked" />
                 </VerticalStackLayout>

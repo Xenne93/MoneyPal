@@ -6,8 +6,15 @@
     xmlns:pages="clr-namespace:MoneyPal.Pages"
     Shell.FlyoutBehavior="Disabled">
 
+    <Shell.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Primary">#8B5CF6</Color>
+        </ResourceDictionary>
+    </Shell.Resources>
+
     <TabBar>
         <ShellContent
+            x:Name="HomeTab"
             Title="Home"
             ContentTemplate="{DataTemplate pages:HomePage}"
             Route="home">
@@ -17,7 +24,8 @@
         </ShellContent>
 
         <ShellContent
-            Title="Uitgaven"
+            x:Name="ExpensesTab"
+            Title="Expenses"
             ContentTemplate="{DataTemplate pages:RecurringExpensesPage}"
             Route="expenses">
             <ShellContent.Icon>
@@ -26,7 +34,8 @@
         </ShellContent>
 
         <ShellContent
-            Title="Inkomsten"
+            x:Name="IncomesTab"
+            Title="Income"
             ContentTemplate="{DataTemplate pages:IncomesPage}"
             Route="incomes">
             <ShellContent.Icon>
@@ -35,7 +44,8 @@
         </ShellContent>
 
         <ShellContent
-            Title="Maandoverzicht"
+            x:Name="MonthlyTab"
+            Title="Monthly"
             ContentTemplate="{DataTemplate pages:MonthlyOverviewPage}"
             Route="monthly">
             <ShellContent.Icon>
@@ -44,11 +54,22 @@
         </ShellContent>
 
         <ShellContent
-            Title="Budgetten"
+            x:Name="BudgetsTab"
+            Title="Budgets"
             ContentTemplate="{DataTemplate pages:BudgetsPage}"
             Route="budgets">
             <ShellContent.Icon>
                 <FontImageSource Glyph="💰" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <ShellContent
+            x:Name="SettingsTab"
+            Title="Settings"
+            ContentTemplate="{DataTemplate pages:SettingsPage}"
+            Route="settings">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="⚙️" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
             </ShellContent.Icon>
         </ShellContent>
     </TabBar>

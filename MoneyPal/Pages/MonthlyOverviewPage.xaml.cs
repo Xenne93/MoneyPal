@@ -39,6 +39,43 @@ public partial class MonthlyOverviewPage : ContentPage
         BudgetsCollection.ItemsSource = _budgets;
         ExpensesCollection.ItemsSource = _expenses;
         OneTimeExpensesCollection.ItemsSource = _oneTimeExpenses;
+
+        // Subscribe to language changes
+        _localization.LanguageChanged += OnLanguageChanged;
+
+        // Update localized texts
+        UpdateLocalizedTexts();
+    }
+
+    private void UpdateLocalizedTexts()
+    {
+        // Update page title
+        Title = _localization.GetString("MonthlyOverview.Title");
+
+        // Update summary card headers
+        TotalExpensesHeaderLabel.Text = _localization.GetString("MonthlyOverview.TotalExpenses");
+        SpentHeaderLabel.Text = _localization.GetString("MonthlyOverview.Spent");
+        ToPayHeaderLabel.Text = _localization.GetString("MonthlyOverview.ToPay");
+        BankBalanceHeaderLabel.Text = _localization.GetString("MonthlyOverview.BankBalance");
+
+        // Update remaining after payments card
+        RemainingAfterPaymentsHeaderLabel.Text = _localization.GetString("MonthlyOverview.RemainingAfterPayments");
+        BankBalanceMinusToPayLabel.Text = _localization.GetString("MonthlyOverview.BankBalanceMinusToPay");
+
+        // Update empty state
+        NoDataLabel.Text = _localization.GetString("MonthlyOverview.NoData");
+        CreateBudgetsAndExpensesLabel.Text = _localization.GetString("MonthlyOverview.CreateBudgetsAndExpenses");
+
+        // Update section headers
+        BudgetsSectionHeaderLabel.Text = _localization.GetString("MonthlyOverview.Budgets");
+        RecurringExpensesSectionHeaderLabel.Text = _localization.GetString("MonthlyOverview.RecurringExpenses");
+        OneTimeExpensesSectionHeaderLabel.Text = _localization.GetString("MonthlyOverview.OneTimeExpenses");
+    }
+
+    private async void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        UpdateLocalizedTexts();
+        await LoadData(); // Reload data to update all texts with new language
     }
 
     protected override async void OnAppearing()
@@ -57,13 +94,19 @@ public partial class MonthlyOverviewPage : ContentPage
             // Show error dialog on main thread (cross-platform)
             if (MainThread.IsMainThread)
             {
-                await DisplayAlert("Fout", $"Er is een fout opgetreden: {ex.Message}", "OK");
+                await DisplayAlert(
+                    _localization.GetString("Common.Error"),
+                    ex.Message,
+                    _localization.GetString("Common.OK"));
             }
             else
             {
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    await DisplayAlert("Fout", $"Er is een fout opgetreden: {ex.Message}", "OK");
+                    await DisplayAlert(
+                        _localization.GetString("Common.Error"),
+                        ex.Message,
+                        _localization.GetString("Common.OK"));
                 });
             }
         }
@@ -73,9 +116,10 @@ public partial class MonthlyOverviewPage : ContentPage
     {
         try
         {
-            // Update month label
+            // Update month label with localized culture
             var date = new DateTime(_currentYear, _currentMonth, 1);
-            MonthLabel.Text = date.ToString("MMMM yyyy", new CultureInfo("nl-NL"));
+            var culture = new CultureInfo(_localization.CurrentLanguage);
+            MonthLabel.Text = date.ToString("MMMM yyyy", culture);
 
             // Get all active budgets
             var budgets = await _budgetService.GetAllBudgetsAsync();
@@ -404,11 +448,12 @@ public partial class MonthlyOverviewPage : ContentPage
         var currentBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
 
         var date = new DateTime(_currentYear, _currentMonth, 1);
-        var monthName = date.ToString("MMMM yyyy", new System.Globalization.CultureInfo("nl-NL"));
+        var culture = new System.Globalization.CultureInfo(_localization.CurrentLanguage);
+        var monthName = date.ToString("MMMM yyyy", culture);
 
         string result = await DisplayPromptAsync(
-            $"Banksaldo Bijwerken - {monthName}",
-            $"Vul je banksaldo in voor {monthName}:",
+            $"{_localization.GetString("MonthlyOverview.UpdateBankBalance")} - {monthName}",
+            $"{_localization.GetString("MonthlyOverview.EnterBankBalanceFor")} {monthName}:",
             initialValue: currentBalance.CurrentBalance.ToString("F2"),
             keyboard: Keyboard.Numeric,
             placeholder: "0,00");
@@ -422,7 +467,10 @@ public partial class MonthlyOverviewPage : ContentPage
             }
             else
             {
-                await DisplayAlert("Fout", "Vul een geldig bedrag in", "OK");
+                await DisplayAlert(
+                    _localization.GetString("Common.Error"),
+                    _localization.GetString("MonthlyOverview.EnterValidAmount"),
+                    _localization.GetString("Common.OK"));
             }
         }
     }
@@ -497,10 +545,10 @@ public partial class MonthlyOverviewPage : ContentPage
         if (item != null)
         {
             bool confirm = await DisplayAlert(
-                "Verwijderen",
-                $"Weet je zeker dat je '{item.Name}' wilt verwijderen?",
-                "Ja",
-                "Nee");
+                _localization.GetString("Common.Delete"),
+                $"{_localization.GetString("Common.Delete")} '{item.Name}'?",
+                _localization.GetString("Common.Yes"),
+                _localization.GetString("Common.No"));
 
             if (confirm)
             {
