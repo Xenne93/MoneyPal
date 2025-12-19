@@ -31,6 +31,16 @@ public partial class SettingsPage : ContentPage
         Title = _localization.GetString("Settings.Title");
         GeneralSectionLabel.Text = _localization.GetString("Settings.General");
         LanguageLabel.Text = _localization.GetString("Settings.Language");
+
+        // Data Management section
+        DataManagementSectionLabel.Text = _localization.GetString("Settings.DataManagement");
+        BudgetsNavigationLabel.Text = _localization.GetString("Budgets.Title");
+        BudgetsDescriptionLabel.Text = _localization.GetString("Settings.ManageBudgets");
+        ExpensesNavigationLabel.Text = _localization.GetString("Expenses.Title");
+        ExpensesDescriptionLabel.Text = _localization.GetString("Settings.ManageExpenses");
+        IncomesNavigationLabel.Text = _localization.GetString("Income.Title");
+        IncomesDescriptionLabel.Text = _localization.GetString("Settings.ManageIncomes");
+
         AboutSectionLabel.Text = _localization.GetString("Settings.About");
         VersionLabel.Text = _localization.GetString("Settings.Version");
 
@@ -138,5 +148,20 @@ public partial class SettingsPage : ContentPage
                 $"{_localization.GetString("Settings.ClearDatabaseError")}: {ex.Message}",
                 _localization.GetString("Common.OK"));
         }
+    }
+
+    private async void OnBudgetsTapped(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("budgets");
+    }
+
+    private async void OnExpensesTapped(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("expenses");
+    }
+
+    private async void OnIncomesTapped(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("incomes");
     }
 }

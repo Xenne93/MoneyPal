@@ -20,6 +20,7 @@ public partial class MonthlyOverviewPage : ContentPage
     private int _currentYear;
     private bool _isLoadingData = false;
     private ObservableCollection<MonthlyBudgetItem> _budgets = new();
+    private ObservableCollection<MonthlyIncomeItem> _incomes = new();
     private ObservableCollection<MonthlyExpenseItem> _expenses = new();
     private ObservableCollection<OneTimeExpenseItem> _oneTimeExpenses = new();
 
@@ -42,6 +43,7 @@ public partial class MonthlyOverviewPage : ContentPage
         _currentYear = DateTime.Now.Year;
 
         BudgetsCollection.ItemsSource = _budgets;
+        IncomeCollection.ItemsSource = _incomes;
         ExpensesCollection.ItemsSource = _expenses;
         OneTimeExpensesCollection.ItemsSource = _oneTimeExpenses;
 
@@ -73,8 +75,13 @@ public partial class MonthlyOverviewPage : ContentPage
 
         // Update section headers
         BudgetsSectionHeaderLabel.Text = _localization.GetString("MonthlyOverview.Budgets");
+        IncomeSectionHeaderLabel.Text = _localization.GetString("MonthlyOverview.Income");
         RecurringExpensesSectionHeaderLabel.Text = _localization.GetString("MonthlyOverview.RecurringExpenses");
         OneTimeExpensesSectionHeaderLabel.Text = _localization.GetString("MonthlyOverview.OneTimeExpenses");
+
+        // Update income summary headers
+        TotalIncomeHeaderLabel.Text = _localization.GetString("MonthlyOverview.TotalIncome");
+        ReceivedIncomeHeaderLabel.Text = _localization.GetString("MonthlyOverview.ReceivedIncome");
     }
 
     private async void OnLanguageChanged(object? sender, EventArgs e)
@@ -138,13 +145,14 @@ public partial class MonthlyOverviewPage : ContentPage
                 RegenerateMonthSection.IsVisible = false;
                 EmptyState.IsVisible = false;
                 BudgetsSection.IsVisible = false;
+                IncomeSection.IsVisible = false;
                 RecurringExpensesSection.IsVisible = false;
                 OneTimeExpensesSection.IsVisible = false;
                 OneTimeExpensesCollection.IsVisible = false;
 
                 // Reset button state
                 InitializeMonthButton.IsEnabled = true;
-                InitializeMonthButton.Text = "Begin met invullen";
+                InitializeMonthButton.Text = _localization.GetString("MonthlyOverview.StartFilling");
                 return;
             }
 
@@ -162,17 +170,23 @@ public partial class MonthlyOverviewPage : ContentPage
             var oneTimeExpenses = await _transactionService.GetOneTimeExpensesForMonthAsync(_currentMonth, _currentYear);
             if (oneTimeExpenses == null) oneTimeExpenses = new List<Expense>();
 
+            // Get income snapshots for this month
+            var incomeSnapshots = await _dataStorage.GetMonthlyIncomeSnapshotsAsync(_currentMonth, _currentYear);
+
         // Check if we have any data
-        if (!budgetSnapshots.Any() && !expenseSnapshots.Any() && !oneTimeExpenses.Any())
+        if (!budgetSnapshots.Any() && !expenseSnapshots.Any() && !incomeSnapshots.Any() && !oneTimeExpenses.Any())
         {
             EmptyState.IsVisible = true;
             BudgetsSection.IsVisible = false;
+            IncomeSection.IsVisible = false;
             RecurringExpensesSection.IsVisible = false;
             OneTimeExpensesSection.IsVisible = false;
             OneTimeExpensesCollection.IsVisible = false;
             TotalLabel.Text = "€ 0,00";
             PaidLabel.Text = "€ 0,00";
             UnpaidLabel.Text = "€ 0,00";
+            TotalIncomeLabel.Text = "€ 0,00";
+            ReceivedIncomeLabel.Text = "€ 0,00";
             return;
         }
 
@@ -279,6 +293,47 @@ public partial class MonthlyOverviewPage : ContentPage
             _expenses.Clear();
         }
 
+        // Load income snapshots - create new list to avoid flickering
+        decimal totalIncome = 0;
+        decimal totalIncomeReceived = 0;
+        var incomeItems = new List<MonthlyIncomeItem>();
+        if (incomeSnapshots.Any())
+        {
+            IncomeSection.IsVisible = true;
+
+            foreach (var snapshot in incomeSnapshots.OrderBy(i => i.DayOfMonth))
+            {
+                // Check received status using the original income ID
+                var isReceived = await _paymentService.IsIncomeReceivedAsync(snapshot.OriginalIncomeId, _currentMonth, _currentYear);
+
+                var item = new MonthlyIncomeItem
+                {
+                    IncomeId = snapshot.OriginalIncomeId,
+                    Name = snapshot.Name,
+                    Description = snapshot.Description ?? "",
+                    Amount = snapshot.Amount,
+                    DayOfMonth = snapshot.DayOfMonth,
+                    IsReceived = isReceived
+                };
+
+                incomeItems.Add(item);
+
+                totalIncome += snapshot.Amount;
+                if (isReceived)
+                    totalIncomeReceived += snapshot.Amount;
+            }
+
+            // Update collection in one go
+            _incomes.Clear();
+            foreach (var item in incomeItems)
+                _incomes.Add(item);
+        }
+        else
+        {
+            IncomeSection.IsVisible = false;
+            _incomes.Clear();
+        }
+
         // Load one-time expenses - create new list to avoid flickering
         decimal totalOneTimeExpenses = 0;
         decimal totalOneTimeExpensesPaid = 0;
@@ -339,6 +394,8 @@ public partial class MonthlyOverviewPage : ContentPage
         TotalLabel.Text = $"€ {grandTotal:N2}";
         PaidLabel.Text = $"€ {grandSpent:N2}";
         UnpaidLabel.Text = $"€ {grandRemaining:N2}";
+        TotalIncomeLabel.Text = $"€ {totalIncome:N2}";
+        ReceivedIncomeLabel.Text = $"€ {totalIncomeReceived:N2}";
         BankBalanceLabel.Text = $"€ {bankBalance.CurrentBalance:N2}";
         RemainingAfterPaymentsLabel.Text = $"€ {remainingAfterPayments:N2}";
         }
@@ -400,6 +457,19 @@ public partial class MonthlyOverviewPage : ContentPage
                 }
             }
 
+            // Calculate income totals
+            decimal totalIncome = 0;
+            decimal totalIncomeReceived = 0;
+            if (_incomes != null)
+            {
+                foreach (var item in _incomes)
+                {
+                    totalIncome += item.Amount;
+                    if (item.IsReceived)
+                        totalIncomeReceived += item.Amount;
+                }
+            }
+
             // Calculate totals (include paid one-time expenses)
             var grandTotal = totalBudget + totalRecurringExpenses + totalOneTimeExpenses;
             var grandSpent = totalSpent + totalRecurringPaid + totalOneTimeExpensesPaid;
@@ -420,6 +490,8 @@ public partial class MonthlyOverviewPage : ContentPage
             TotalLabel.Text = $"€ {grandTotal:N2}";
             PaidLabel.Text = $"€ {grandSpent:N2}";
             UnpaidLabel.Text = $"€ {grandRemaining:N2}";
+            TotalIncomeLabel.Text = $"€ {totalIncome:N2}";
+            ReceivedIncomeLabel.Text = $"€ {totalIncomeReceived:N2}";
             BankBalanceLabel.Text = $"€ {bankBalance.CurrentBalance:N2}";
             RemainingAfterPaymentsLabel.Text = $"€ {remainingAfterPayments:N2}";
         }
@@ -565,6 +637,63 @@ public partial class MonthlyOverviewPage : ContentPage
         }
     }
 
+    private async void OnIncomeCheckedChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (sender is CheckBox checkBox && checkBox.BindingContext is MonthlyIncomeItem item)
+        {
+            // Don't show popup if we're just loading data
+            if (_isLoadingData)
+            {
+                return;
+            }
+
+            if (e.Value)
+            {
+                // Ask user if they want to add to bank balance
+                bool addToBalance = await DisplayAlert(
+                    _localization.GetString("MonthlyOverview.AddToBalance"),
+                    $"{_localization.GetString("MonthlyOverview.AddToBalanceQuestion")} (€ {item.Amount:N2})?",
+                    _localization.GetString("Common.Yes"),
+                    _localization.GetString("Common.No"));
+
+                await _paymentService.MarkIncomeAsReceivedAsync(item.IncomeId, _currentMonth, _currentYear);
+
+                // If yes, add to bank balance
+                if (addToBalance)
+                {
+                    var currentBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
+                    var newBalance = currentBalance.CurrentBalance + item.Amount;
+                    await _bankBalanceService.UpdateBankBalanceAsync(_currentMonth, _currentYear, newBalance);
+                }
+            }
+            else
+            {
+                // Ask user if they want to deduct from bank balance
+                bool deductFromBalance = await DisplayAlert(
+                    _localization.GetString("MonthlyOverview.DeductFromBalance"),
+                    $"{_localization.GetString("MonthlyOverview.DeductFromBalanceQuestion")} (€ {item.Amount:N2})?",
+                    _localization.GetString("Common.Yes"),
+                    _localization.GetString("Common.No"));
+
+                await _paymentService.MarkIncomeAsNotReceivedAsync(item.IncomeId, _currentMonth, _currentYear);
+
+                // If yes, deduct from bank balance
+                if (deductFromBalance)
+                {
+                    var currentBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
+                    var newBalance = currentBalance.CurrentBalance - item.Amount;
+                    await _bankBalanceService.UpdateBankBalanceAsync(_currentMonth, _currentYear, newBalance);
+                }
+            }
+
+            // Update the item's IsReceived property
+            item.IsReceived = e.Value;
+
+            // Only update summary, don't reload entire list to prevent scroll jump
+            await UpdateSummaryOnly();
+        }
+    }
+
     private async void OnEditBankBalanceClicked(object sender, EventArgs e)
     {
         var currentBalance = await _bankBalanceService.GetBankBalanceAsync(_currentMonth, _currentYear);
@@ -689,39 +818,62 @@ public partial class MonthlyOverviewPage : ContentPage
             var monthName = date.ToString("MMMM yyyy", culture);
 
             bool confirm = await DisplayAlert(
-                "Maand initialiseren",
-                $"Wil je {monthName} initialiseren met je huidige budgetten, vaste lasten en inkomsten?",
-                "Ja",
-                "Nee");
+                _localization.GetString("MonthlyOverview.InitializeMonth"),
+                string.Format(_localization.GetString("MonthlyOverview.InitializeMonthQuestion"), monthName),
+                _localization.GetString("Common.Yes"),
+                _localization.GetString("Common.No"));
 
             if (confirm)
             {
+                // Check if there's a previous month balance
+                var previousBalance = await _monthInitService.GetPreviousMonthBalanceAsync(_currentMonth, _currentYear);
+                bool copyPreviousBalance = true;
+
+                if (previousBalance.HasValue && previousBalance.Value != 0)
+                {
+                    // Show popup asking if user wants to use previous month's balance
+                    var previousDate = _currentMonth == 1
+                        ? new DateTime(_currentYear - 1, 12, 1)
+                        : new DateTime(_currentYear, _currentMonth - 1, 1);
+                    var previousMonthName = previousDate.ToString("MMMM yyyy", culture);
+
+                    var usePreviousBalance = await DisplayAlert(
+                        _localization.GetString("MonthlyOverview.CopyBankBalance"),
+                        string.Format(_localization.GetString("MonthlyOverview.CopyBankBalanceQuestion"),
+                            previousMonthName,
+                            previousBalance.Value.ToString("C", culture)),
+                        _localization.GetString("Common.Yes"),
+                        _localization.GetString("Common.No"));
+
+                    copyPreviousBalance = usePreviousBalance;
+                }
+
                 // Show loading indicator
                 InitializeMonthButton.IsEnabled = false;
-                InitializeMonthButton.Text = "Bezig met initialiseren...";
+                InitializeMonthButton.Text = _localization.GetString("MonthlyOverview.Initializing");
 
-                await _monthInitService.InitializeMonthAsync(_currentMonth, _currentYear);
+                await _monthInitService.InitializeMonthAsync(_currentMonth, _currentYear, copyPreviousBalance);
 
                 // Reload data
                 await LoadData();
 
                 await DisplayAlert(
-                    "Succes",
-                    $"{monthName} is succesvol geïnitialiseerd!",
-                    "OK");
+                    _localization.GetString("Common.Success"),
+                    string.Format(_localization.GetString("MonthlyOverview.MonthInitializedSuccess"), monthName),
+                    _localization.GetString("Common.OK"));
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error initializing month: {ex}");
             await DisplayAlert(
-                "Fout",
-                $"Er is een fout opgetreden bij het initialiseren van de maand: {ex.Message}",
-                "OK");
+                _localization.GetString("Common.Error"),
+                string.Format(_localization.GetString("MonthlyOverview.InitializeMonthError"), ex.Message),
+                _localization.GetString("Common.OK"));
 
             // Re-enable button
             InitializeMonthButton.IsEnabled = true;
-            InitializeMonthButton.Text = "Begin met invullen";
+            InitializeMonthButton.Text = _localization.GetString("MonthlyOverview.StartFilling");
         }
     }
 
@@ -812,6 +964,17 @@ public class MonthlyExpenseItem
     public decimal Amount { get; set; }
     public int DayOfMonth { get; set; }
     public bool IsPaid { get; set; }
+}
+
+// Display model for monthly income items
+public class MonthlyIncomeItem
+{
+    public Guid IncomeId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public int DayOfMonth { get; set; }
+    public bool IsReceived { get; set; }
 }
 
 // Display model for one-time expense items

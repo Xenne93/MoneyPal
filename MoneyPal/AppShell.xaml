@@ -24,42 +24,12 @@
         </ShellContent>
 
         <ShellContent
-            x:Name="ExpensesTab"
-            Title="Expenses"
-            ContentTemplate="{DataTemplate pages:RecurringExpensesPage}"
-            Route="expenses">
-            <ShellContent.Icon>
-                <FontImageSource Glyph="💳" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
-            </ShellContent.Icon>
-        </ShellContent>
-
-        <ShellContent
-            x:Name="IncomesTab"
-            Title="Income"
-            ContentTemplate="{DataTemplate pages:IncomesPage}"
-            Route="incomes">
-            <ShellContent.Icon>
-                <FontImageSource Glyph="💵" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
-            </ShellContent.Icon>
-        </ShellContent>
-
-        <ShellContent
             x:Name="MonthlyTab"
             Title="Monthly"
             ContentTemplate="{DataTemplate pages:MonthlyOverviewPage}"
             Route="monthly">
             <ShellContent.Icon>
                 <FontImageSource Glyph="📅" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
-            </ShellContent.Icon>
-        </ShellContent>
-
-        <ShellContent
-            x:Name="BudgetsTab"
-            Title="Budgets"
-            ContentTemplate="{DataTemplate pages:BudgetsPage}"
-            Route="budgets">
-            <ShellContent.Icon>
-                <FontImageSource Glyph="💰" FontFamily="Arial" Size="28" Color="{StaticResource Primary}" />
             </ShellContent.Icon>
         </ShellContent>
 

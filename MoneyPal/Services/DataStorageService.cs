@@ -34,6 +34,7 @@ public class DataStorageService : IDataStorageService
                 await _database.CreateTableAsync<RecurringExpense>();
                 await _database.CreateTableAsync<Category>();
                 await _database.CreateTableAsync<PaymentRecord>();
+                await _database.CreateTableAsync<IncomeRecord>();
                 await _database.CreateTableAsync<Budget>();
                 await _database.CreateTableAsync<BudgetSpending>();
                 await _database.CreateTableAsync<Expense>();
@@ -253,6 +254,50 @@ public class DataStorageService : IDataStorageService
     {
         await InitializeAsync();
         return await _database.DeleteAsync<PaymentRecord>(id);
+    }
+
+    // IncomeRecord methods
+    public async Task<IncomeRecord?> GetIncomeRecordAsync(Guid incomeId, int month, int year)
+    {
+        await InitializeAsync();
+        return await _database.Table<IncomeRecord>()
+            .Where(i => i.IncomeId == incomeId && i.Month == month && i.Year == year)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<List<IncomeRecord>> GetIncomeRecordsForMonthAsync(int month, int year)
+    {
+        await InitializeAsync();
+        return await _database.Table<IncomeRecord>()
+            .Where(i => i.Month == month && i.Year == year)
+            .ToListAsync();
+    }
+
+    public async Task<IncomeRecord> UpsertIncomeRecordAsync(IncomeRecord record)
+    {
+        await InitializeAsync();
+
+        var existing = await GetIncomeRecordAsync(record.IncomeId, record.Month, record.Year);
+        if (existing != null)
+        {
+            record.Id = existing.Id;
+            record.ModifiedAt = DateTime.UtcNow;
+            await _database.UpdateAsync(record);
+        }
+        else
+        {
+            record.Id = Guid.NewGuid();
+            record.CreatedAt = DateTime.UtcNow;
+            await _database.InsertAsync(record);
+        }
+
+        return record;
+    }
+
+    public async Task<int> DeleteIncomeRecordAsync(Guid id)
+    {
+        await InitializeAsync();
+        return await _database.DeleteAsync<IncomeRecord>(id);
     }
 
     // Budget methods
@@ -687,6 +732,7 @@ public class DataStorageService : IDataStorageService
         // Delete all data from all tables
         await _database.DeleteAllAsync<Expense>();
         await _database.DeleteAllAsync<PaymentRecord>();
+        await _database.DeleteAllAsync<IncomeRecord>();
         await _database.DeleteAllAsync<BudgetSpending>();
         await _database.DeleteAllAsync<Budget>();
         await _database.DeleteAllAsync<RecurringExpense>();

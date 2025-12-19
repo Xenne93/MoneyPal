@@ -10,4 +10,9 @@ public interface IPaymentService
     Task<List<PaymentRecord>> GetPaymentRecordsForMonthAsync(int month, int year);
     Task<decimal> GetTotalUnpaidExpensesAsync(int month, int year);
     Task<int> GetUnpaidCountAsync(int month, int year);
+
+    // Income tracking methods
+    Task<bool> MarkIncomeAsReceivedAsync(Guid incomeId, int month, int year);
+    Task<bool> MarkIncomeAsNotReceivedAsync(Guid incomeId, int month, int year);
+    Task<bool> IsIncomeReceivedAsync(Guid incomeId, int month, int year);
 }
